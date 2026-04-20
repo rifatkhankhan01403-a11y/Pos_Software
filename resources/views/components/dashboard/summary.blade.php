@@ -1,184 +1,399 @@
+@extends('layout.sidenav-layout')
+
+@section('content')
+
+<style>
+
+/* Background */
+.dashboard-card,
+.action-card {
+    cursor: pointer;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+}
+body{
+background:#fff4f7;
+}
+
+/* Header Filter */
+
+.filter-btn{
+border:none;
+background:#ffd6e2;
+color:#a78294;
+padding:6px 14px;
+border-radius:6px;
+font-size:13px;
+font-weight:600;
+}
+
+.filter-btn.active{
+background:#d63384;
+color:white;
+}
+
+
+/* Balance */
+
+.balance-box{
+background:#ffd6e2;
+color:#d63384;
+padding:8px 18px;
+border-radius:8px;
+font-weight:600;
+}
+
+
+/* Cards */
+
+.dashboard-card{
+background:white;
+border-radius:12px;
+padding:18px;
+box-shadow:0 2px 8px rgba(0,0,0,0.06);
+display:flex;
+justify-content:space-between;
+align-items:center;
+}
+
+.card-title{
+font-size:13px;
+color:#777;
+}
+
+.card-value{
+font-size:22px;
+font-weight:700;
+}
+
+.icon-box{
+width:40px;
+height:40px;
+border-radius:8px;
+background:#ffd6e2;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:20px;
+color:#d63384;
+}
+
+
+/* Action Cards */
+
+.action-card{
+background:white;
+border-radius:12px;
+padding:35px;
+text-align:center;
+box-shadow:0 2px 8px rgba(0,0,0,0.05);
+cursor:pointer;
+transition:.2s;
+}
+
+.action-card:hover{
+background:#ffd6e2;
+}
+
+.action-icon{
+font-size:40px;
+color:#d63384;
+margin-bottom:10px;
+}
+
+</style>
+
+
+
 <div class="container-fluid">
-    <div class="row">
-
-        <div class="col-xl-3 col-lg-3 col-md-12 col-sm-12 col-12 animated fadeIn p-2">
-            <div class="card card-plain h-100 bg-white">
-                <div class="p-3">
-                    <div class="row">
-                        <div class="col-9 col-lg-8 col-md-8 col-sm-9">
-                            <div>
-                                <h5 class="mb-0 text-capitalize font-weight-bold">
-                                    <span id="product"></span>
-                                </h5>
-                                <p class="mb-0 text-sm">Product</p>
-                            </div>
-                        </div>
-                        <div class="col-3 col-lg-4 col-md-4 col-sm-3 text-end">
-                            <div class="icon icon-shape bg-gradient-primary shadow float-end border-radius-md">
-                                <img class="w-100 " src="{{asset('images/icon.svg')}}"/>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-xl-3 col-lg-3 col-md-12 col-sm-12 col-12 animated fadeIn p-2">
-            <div class="card card-plain h-100 bg-white">
-                <div class="p-3">
-                    <div class="row">
-                        <div class="col-9 col-lg-8 col-md-8 col-sm-9">
-                            <div>
-                                <h5 class="mb-0 text-capitalize font-weight-bold">
-                                    <span id="category"></span>
-                                </h5>
-                                <p class="mb-0 text-sm">Category</p>
-                            </div>
-                        </div>
-                        <div class="col-3 col-lg-4 col-md-4 col-sm-3 text-end">
-                            <div class="icon icon-shape bg-gradient-primary shadow float-end border-radius-md">
-                                <img class="w-100 " src="{{asset('images/icon.svg')}}"/>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-xl-3 col-lg-3 col-md-12 col-sm-12 col-12 animated fadeIn p-2">
-            <div class="card card-plain h-100 bg-white">
-                <div class="p-3">
-                    <div class="row">
-                        <div class="col-9 col-lg-8 col-md-8 col-sm-9">
-                            <div>
-                                <h5 class="mb-0 text-capitalize font-weight-bold">
-                                    <span id="customer"></span>
-                                </h5>
-                                <p class="mb-0 text-sm">Customer</p>
-                            </div>
-                        </div>
-                        <div class="col-3 col-lg-4 col-md-4 col-sm-3 text-end">
-                            <div class="icon icon-shape bg-gradient-primary shadow float-end border-radius-md">
-                                <img class="w-100 " src="{{asset('images/icon.svg')}}"/>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-xl-3 col-lg-3 col-md-12 col-sm-12 col-12 animated fadeIn p-2">
-            <div class="card card-plain h-100  bg-white">
-                <div class="p-3">
-                    <div class="row">
-                        <div class="col-9 col-lg-8 col-md-8 col-sm-9">
-                            <div>
-                                <h5 class="mb-0 text-capitalize font-weight-bold">
-                                    <span id="invoice"></span>
-                                </h5>
-                                <p class="mb-0 text-sm">Invoice</p>
-                            </div>
-                        </div>
-                        <div class="col-3 col-lg-4 col-md-4 col-sm-3 text-end">
-                            <div class="icon icon-shape bg-gradient-primary shadow float-end border-radius-md">
-                                <img class="w-100 " src="{{asset('images/icon.svg')}}"/>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
 
-        <div class="col-xl-3 col-lg-3 col-md-12 col-sm-12 col-12 animated fadeIn p-2">
-            <div class="card card-plain h-100 bg-white">
-                <div class="p-3">
-                    <div class="row">
-                        <div class="col-9 col-lg-8 col-md-8 col-sm-9">
-                            <div>
-                                <h5 class="mb-0 text-capitalize font-weight-bold">
-                                    $ <span id="total"></span>
-                                </h5>
-                                <p class="mb-0 text-sm">Total Sale</p>
-                            </div>
-                        </div>
-                        <div class="col-3 col-lg-4 col-md-4 col-sm-3 text-end">
-                            <div class="icon icon-shape bg-gradient-primary shadow float-end border-radius-md">
-                                <img class="w-100 " src="{{asset('images/icon.svg')}}"/>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+<!-- HEADER -->
 
+<div class="d-flex justify-content-between align-items-center mb-4">
 
-        <div class="col-xl-3 col-lg-3 col-md-12 col-sm-12 col-12 animated fadeIn p-2">
-            <div class="card card-plain h-100  bg-white">
-                <div class="p-3">
-                    <div class="row">
-                        <div class="col-9 col-lg-8 col-md-8 col-sm-9">
-                            <div>
-                                <h5 class="mb-0 text-capitalize font-weight-bold">
-                                    $ <span id="vat"></span>
-                                </h5>
-                                <p class="mb-0 text-sm">Vat Collection</p>
-                            </div>
-                        </div>
-                        <div class="col-3 col-lg-4 col-md-4 col-sm-3 text-end">
-                            <div class="icon icon-shape bg-gradient-primary shadow float-end border-radius-md">
-                                <img class="w-100 " src="{{asset('images/icon.svg')}}"/>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+<h4 class="fw-bold">Dashboard</h4>
 
+<div class="d-flex gap-2">
 
-        <div class="col-xl-3 col-lg-3 col-md-12 col-sm-12 col-12 animated fadeIn p-2">
-            <div class="card card-plain h-100  bg-white">
-                <div class="p-3">
-                    <div class="row">
-                        <div class="col-9 col-lg-8 col-md-8 col-sm-9">
-                            <div>
-                                <h5 class="mb-0 text-capitalize font-weight-bold">
-                                    $ <span id="payable"></span>
-                                </h5>
-                                <p class="mb-0 text-sm">Total Collection</p>
-                            </div>
-                        </div>
-                        <div class="col-3 col-lg-4 col-md-4 col-sm-3 text-end">
-                            <div class="icon icon-shape bg-gradient-primary shadow float-end border-radius-md">
-                                <img class="w-100 " src="{{asset('images/icon.svg')}}"/>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+<button class="filter-btn active" data-filter="today">Today</button>
+<button class="filter-btn" data-filter="weekly">Weekly</button>
+<button class="filter-btn" data-filter="monthly">Monthly</button>
+<button class="filter-btn" data-filter="yearly">Yearly</button>
+<button class="filter-btn" data-filter="all">All Time</button>
 
-    </div>
+</div>
+
 </div>
 
 
 
+<div class="mb-4">
+<span class="balance-box" id="balanceBox">
+💰 Balance: ৳ 0
+</span>
+</div>
+
+
+
+<!-- TOP CARDS -->
+
+<div class="row g-3 mb-4">
+
+<div class="col-lg-4">
+
+<div class="dashboard-card" onclick="goTo('/salePage')">
+<div>
+
+<div class="card-title" id="sellTitle">Today Sell</div>
+
+<div class="card-value text-success" id="sellAmount">৳ 0</div>
+
+</div>
+
+<div class="icon-box">📈</div>
+
+</div>
+
+</div>
+
+
+
+<div class="col-lg-4">
+
+<div class="dashboard-card" onclick="goTo('/purchase-book')">
+
+<div>
+
+<div class="card-title" id="purchaseTitle">Today Purchase</div>
+
+<div class="card-value text-primary" id="purchaseAmount">৳ 0</div>
+
+</div>
+
+<div class="icon-box">🛒</div>
+
+</div>
+
+</div>
+
+
+
+<div class="col-lg-4">
+
+<div class="dashboard-card "  onclick="goTo('/expensePage')">
+
+<div>
+
+<div class="card-title" id="expenseTitle">Today Expense</div>
+
+<div class="card-value text-danger" id="expenseAmount">৳ 0</div>
+
+</div>
+
+<div class="icon-box">💸</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+
+<!-- SECOND ROW -->
+
+<div class="row g-3 mb-4">
+
+<div class="col-lg-4">
+
+<div class="dashboard-card "  onclick="goTo('/productPage')">
+
+<div>
+
+<div class="card-title">Total Stock</div>
+<div class="card-value text-success" id="stockValue">0</div>
+
+</div>
+
+<div class="icon-box">📦</div>
+
+</div>
+
+</div>
+
+
+
+<div class="col-lg-4">
+
+<div class="dashboard-card" onclick="goTo('/due-book')">
+
+<div>
+
+<div class="card-title">Receivable</div>
+
+<div class="card-value text-danger" id="receivableValue">৳ 0</div>
+
+</div>
+
+<div class="icon-box">💳</div>
+
+</div>
+
+</div>
+
+
+
+<div class="col-lg-4">
+
+<div class="dashboard-card" onclick="goTo('/due-book')">
+
+<div>
+
+<div class="card-title">Payable</div>
+
+<div class="card-value text-success" id="payableValue">৳ 0</div>
+
+</div>
+
+<div class="icon-box">🧾</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+
+<!-- ACTION CARDS -->
+
+<div class="row g-3">
+
+<div class="col-lg-4">
+
+<div class="action-card" onclick="goTo('/stock-add')">
+<div class="action-icon">📦</div>
+
+<h6>Purchase</h6>
+
+</div>
+
+</div>
+
+
+<div class="col-lg-4">
+
+<div class="action-card" onclick="goTo('/salePage')">
+
+<div class="action-icon">🛍️</div>
+
+<h6>Sell</h6>
+
+</div>
+
+</div>
+
+
+<div class="col-lg-4">
+
+<div class="action-card" data-bs-toggle="modal" data-bs-target="#quickSellModal">
+
+<div class="action-icon">⚡</div>
+
+<h6>Quick Sell</h6>
+
+</div>
+
+</div>
+
+</div>
+
+
+</div>
+
+
 
 <script>
-    getList();
-    async function getList() {
-        showLoader();
-        let res=await axios.get("/summary");
 
-        document.getElementById('product').innerText=res.data['product']
-        document.getElementById('category').innerText=res.data['category']
-        document.getElementById('customer').innerText=res.data['customer']
-        document.getElementById('invoice').innerText=res.data['invoice']
-        document.getElementById('total').innerText=res.data['total']
-        document.getElementById('vat').innerText=res.data['vat']
-        document.getElementById('payable').innerText=res.data['payable']
+/* FILTER BUTTON CLICK */
+
+document.querySelectorAll(".filter-btn").forEach(button=>{
+
+button.addEventListener("click",function(){
+
+document.querySelectorAll(".filter-btn").forEach(btn=>{
+btn.classList.remove("active")
+})
+
+this.classList.add("active")
+
+let filter=this.dataset.filter
+
+loadDashboardData(filter)
+
+})
+
+})
 
 
-        hideLoader();
-    }
+
+function goTo(url){
+    window.location.href = url;
+}
+
+
+
+/* LOAD DATA FROM LARAVEL */
+
+function loadDashboardData(filter){
+
+fetch('/dashboard-data?filter='+filter)
+
+.then(response=>response.json())
+
+.then(data=>{
+
+document.getElementById("sellAmount").innerText="৳ "+data.sell
+document.getElementById("purchaseAmount").innerText="৳ "+data.purchase
+document.getElementById("expenseAmount").innerText="৳ "+data.expense
+
+let title=filter.charAt(0).toUpperCase()+filter.slice(1)
+
+document.getElementById("sellTitle").innerText=title+" Sell"
+document.getElementById("purchaseTitle").innerText=title+" Purchase"
+document.getElementById("expenseTitle").innerText=title+" Expense"
+
+})
+
+}
+
+function loadDashboardSummary(){
+
+fetch('/dashboard-summary')
+.then(res => res.json())
+.then(data => {
+
+    document.getElementById("receivableValue").innerText = "৳ " + data.receivable;
+    document.getElementById("payableValue").innerText = "৳ " + data.payable;
+    document.getElementById("stockValue").innerText = data.stock;
+    document.getElementById("balanceBox").innerText =
+    "💰 Balance: ৳ " + data.net;
+
+});
+}
+
+loadDashboardSummary();
+
+
+/* DEFAULT LOAD */
+
+loadDashboardData('today')
+
 </script>
+
+
+@endsection

@@ -13,8 +13,14 @@
     <script src="{{asset('js/toastify-js.js')}}"></script>
     <script src="{{asset('js/axios.min.js')}}"></script>
     <script src="{{asset('js/config.js')}}"></script>
-</head>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
+</head>
+<style>
+
+
+
+</style>
 <body>
 
 <div id="loader" class="LoadingOverlay d-none">
@@ -29,8 +35,7 @@
 <script>
 
 </script>
-
-<script src="{{asset('js/bootstrap.bundle.js')}}"></script>
+{{-- <script src="{{asset('js/bootstrap.bundle.js')}}"></script> --}}
 
 </body>
 </html>

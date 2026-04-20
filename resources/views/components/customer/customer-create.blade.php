@@ -40,9 +40,7 @@
         if (customerName.length === 0) {
             errorToast("Customer Name Required !")
         }
-        else if(customerEmail.length===0){
-            errorToast("Customer Email Required !")
-        }
+
         else if(customerMobile.length===0){
             errorToast("Customer Mobile Required !")
         }

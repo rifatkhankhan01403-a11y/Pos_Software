@@ -13,23 +13,22 @@ class CustomerController extends Controller
         return view('pages.dashboard.customer-page');
     }
 
-    function CustomerCreate(Request $request){
-        $user_id=$request->header('id');
-        return Customer::create([
-            'name'=>$request->input('name'),
-            'email'=>$request->input('email'),
-            'mobile'=>$request->input('mobile'),
-            'user_id'=>$user_id
-        ]);
-    }
+  function CustomerCreate(Request $request){
+    $user_id = $request->header('id');
+    $customer = Customer::create([
+        'name' => $request->input('name'),
+        'email' => $request->input('email'),
+        'mobile' => $request->input('mobile'),
+        'user_id' => $user_id
+    ]);
 
+    return response()->json($customer, 201); // Important: return JSON with 201 status
+}
 
-    function CustomerList(Request $request){
-        $user_id=$request->header('id');
-        return Customer::where('user_id',$user_id)->get();
-    }
-
-
+function CustomerList(Request $request){
+    // Return all customers ordered by id ascending (oldest first, latest at bottom)
+    return Customer::orderBy('id', 'asc')->get();
+}
     function CustomerDelete(Request $request){
         $customer_id=$request->input('id');
         $user_id=$request->header('id');
