@@ -14,7 +14,6 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 COPY . .
 
 # Install dependencies safely
-RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
 RUN php artisan config:cache
 RUN php artisan route:cache
