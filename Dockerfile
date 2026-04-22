@@ -5,17 +5,19 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y \
     git curl zip unzip libpng-dev libonig-dev libxml2-dev libzip-dev
 
-# Install PHP extensions Laravel commonly needs
+# Install PHP extensions
 RUN docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath gd zip
 
-# Composer
+# Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
+# Copy project
 COPY . .
 
-# Install dependencies safely
+# Install Laravel dependencies
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
-RUN php artisan config:cache
-RUN php artisan route:cache
+# Give permission for Laravel folders
+RUN chmod -R 775 storage bootstrap/cache
 
 CMD php artisan serve --host=0.0.0.0 --port=10000
