@@ -1,4 +1,4 @@
-FROM php:8.2-fpm
+FROM php:8.4-fpm
 
 WORKDIR /app
 
@@ -11,11 +11,11 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 COPY . .
 
-RUN composer install --no-interaction --prefer-dist --no-dev --optimize-autoloader --no-scripts
+RUN composer install --no-interaction --prefer-dist --no-dev --optimize-autoloader
 
 RUN cp .env.example .env
 
-RUN php artisan package:discover --ansi || true
+RUN php artisan key:generate || true
 
 RUN chmod -R 775 storage bootstrap/cache
 
