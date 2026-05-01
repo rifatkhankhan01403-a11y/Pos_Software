@@ -130,8 +130,9 @@
         </div>
 
         <!-- DOWNLOAD BUTTON -->
-        <a href="{{ route('sales.pdf', request()->all()) }}"
-       class="card border-0 shadow-sm px-3 py-2 text-decoration-none">
+       <a href="javascript:void(0)"
+   onclick="downloadSalesPdf()"
+   class="card border-0 shadow-sm px-3 py-2 text-decoration-none">
 
         <div class="d-flex align-items-center gap-2">
             <div class="icon-circle bg-danger-subtle">
@@ -397,6 +398,15 @@ setTimeout(() => {
         setTimeout(() => alert.remove(), 200);
     }
 }, 1400);
+
+function downloadSalesPdf() {
+
+    let params = new URLSearchParams(window.location.search);
+
+    let url = `/sales/pdf?${params.toString()}`;
+
+    window.open(url, '_blank');
+}
 </script>
 
 @endsection
