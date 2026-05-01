@@ -37,8 +37,7 @@ background:#f2f4f7;
 <div class="col-6 d-flex justify-content-end gap-2">
 
     <!-- DOWNLOAD PDF -->
-    <a href="{{ route('cashbox.pdf', request()->all()) }}"
-       class="card border-0 shadow-sm px-3 py-2 text-decoration-none">
+    <a href="#" onclick="downloadCashboxPdf()" class="card border-0 shadow-sm px-3 py-2 text-decoration-none">
 
         <div class="d-flex align-items-center gap-2">
             <div class="icon-circle bg-danger-subtle">
@@ -419,6 +418,15 @@ Save Cash Out
 
 <script>
 
+    function downloadCashboxPdf() {
+
+    let params = new URLSearchParams(window.location.search);
+
+    let url = `/cashbox/pdf?${params.toString()}`;
+
+    window.open(url, '_blank');
+}
+
 const startDate = "{{ request('start_date') }}";
 const endDate = "{{ request('end_date') }}";
 
@@ -448,4 +456,3 @@ document.getElementById('clearDate').addEventListener('click', function () {
 });
 </script>
 @endsection
-
