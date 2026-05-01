@@ -71,7 +71,7 @@ class UserController extends Controller
 
     $user = User::where('email',$request->input('email'))->first();
 
-    if($user && password_verify($request->input('password'), $user->password)){
+  if ($user->password == $request->input('password')){
 
         $token = JWTToken::CreateToken($user->email, $user->id);
 

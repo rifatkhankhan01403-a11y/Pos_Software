@@ -294,7 +294,7 @@ class CashboxController extends Controller
             'balance' => $balance,
             'startDate' => $startDate,
             'endDate' => $endDate
-        ])->setPaper('a4');
+        ])->setPaper('a4', 'portrait');
 
         return $pdf->download('cashbox-report.pdf');
     }
