@@ -7,6 +7,8 @@ use App\Models\InvoiceBilling;
 use App\Models\Product;
 use App\Models\Customer;
 use Illuminate\View\View;
+use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\User;
 
 class CodSaleController extends Controller
 {
@@ -234,5 +236,78 @@ public function delete($id)
         'status' => true,
         'message' => 'Deleted'
     ]);
+}
+
+
+public function downloadPdf(Request $request)
+{
+    $shopId = $request->auth_shop_id;
+
+    $startDate = $request->start_date;
+    $endDate = $request->end_date;
+
+    $query = InvoiceBilling::where('shop_id', $shopId)
+        ->where('source', 'Condition Sales');
+
+    if ($request->search) {
+        $query->where(function ($q) use ($request) {
+            $q->where('customer_name', 'like', '%' . $request->search . '%')
+              ->orWhere('customer_mobile', 'like', '%' . $request->search . '%');
+        });
+    }
+
+    if ($request->status == 'pending') {
+        $query->where('due', '>', 0);
+    }
+
+    if ($request->status == 'paid') {
+        $query->where('due', 0);
+    }
+
+    if ($startDate && $endDate) {
+        $query->whereBetween('created_at', [
+            $startDate . ' 00:00:00',
+            $endDate . ' 23:59:59'
+        ]);
+    }
+
+    $sales = $query->orderBy('id', 'desc')->get();
+
+    $sales->transform(function ($row, $index) {
+        $items = is_array($row->items)
+            ? $row->items
+            : json_decode($row->items, true);
+
+        $qty = 0;
+        foreach ($items ?? [] as $item) {
+            $qty += $item['qty'] ?? 0;
+        }
+
+        $row->sl = $index + 1;
+        $row->qty = $qty;
+
+        return $row;
+    });
+    $total = $sales->sum('total');
+$totalPaid = $sales->sum('paid');
+$totalDue = $sales->sum('due');
+
+   $shop = User::where('shop_id', $shopId)
+    ->where('role', 'owner')
+    ->first();
+
+   $pdf = PDF::loadView('pdf.cod-sale', [
+    'sales' => $sales,
+    'shop' => $shop,
+    'startDate' => $startDate,
+    'endDate' => $endDate,
+
+    // ✅ ADD THESE
+    'total' => $total,
+    'totalPaid' => $totalPaid,
+    'totalDue' => $totalDue
+]);
+
+    return $pdf->download('cod-sales.pdf');
 }
 }

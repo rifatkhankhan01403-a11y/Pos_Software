@@ -96,7 +96,36 @@
 
 <div class="page-wrap">
 
-<h6 class="mb-3">Conditional Sales</h6>
+<div class="row mb-3 align-items-center">
+
+    <!-- LEFT -->
+    <div class="col-md-6">
+        <h6 class="mb-0">Conditional Sales</h6>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="col-md-6 d-flex justify-content-end gap-2">
+
+        <!-- PDF DOWNLOAD CARD STYLE -->
+        <a href="#"
+           onclick="downloadCodPdf()"
+           class="card border-0 shadow-sm px-3 py-2 text-decoration-none">
+
+            <div class="d-flex align-items-center gap-2">
+                <div class="icon-circle bg-danger-subtle">
+                    <i class="bi bi-file-earmark-pdf text-danger"></i>
+                </div>
+
+                <div>
+                    <div class="text-dark fw-semibold" style="font-size:13px;">
+                        Download PDF
+                    </div>
+                </div>
+            </div>
+        </a>
+
+    </div>
+</div>
 
 <!-- ================= TOP CARDS ================= -->
 <div class="row mb-3">
@@ -830,6 +859,30 @@ function formatDate(datetime) {
     return `${yyyy}-${mm}-${dd} ${hh}:${min}:${ss}`;
 }
 
+function downloadCodPdf() {
+
+    let search = document.getElementById('searchInput').value || '';
+    let status = document.getElementById('statusFilter').value || '';
+
+    let start_date = '';
+    let end_date = '';
+
+    let dateRange = document.getElementById('filterDate').value;
+
+    if(dateRange){
+        let parts = dateRange.split(" to ");
+        start_date = parts[0];
+        end_date = parts[1] || parts[0];
+    }
+
+    let url = `/cod-sale/pdf?search=${search}`
+        + `&status=${status}`
+        + `&start_date=${start_date}`
+        + `&end_date=${end_date}`;
+
+    window.open(url, '_blank');
+}
+
 function resetForm(){
 
     // clear customer
@@ -855,6 +908,8 @@ function resetForm(){
         <td><button class="btn btn-danger btn-sm remove-row">x</button></td>
     </tr>`;
 
+
+
     // reset totals
     document.getElementById("paid_date").value = "";
     document.getElementById("grandTotal").innerText = 0;
@@ -863,6 +918,8 @@ function resetForm(){
     // reset date
     document.getElementById("date").valueAsDate = new Date();
 }
+
+
 </script>
 
 @endsection

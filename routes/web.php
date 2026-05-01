@@ -183,4 +183,5 @@ Route::get("/sales-report/{FormDate}/{ToDate}",[ReportController::class,'SalesRe
 
     Route::post('/cod-sale/mark-paid/{id}', [CodSaleController::class, 'markPaid'])->middleware([TokenVerificationMiddleware::class]);
     Route::delete('/cod-sale/delete/{id}', [CodSaleController::class, 'delete'])->middleware([TokenVerificationMiddleware::class]);
-
+Route::get('/cod-sale/pdf', [CodSaleController::class, 'downloadPdf'])
+    ->name('cod.pdf')->middleware([TokenVerificationMiddleware::class]);
