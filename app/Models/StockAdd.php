@@ -4,11 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
+use App\Traits\TracksUserShop;
 class StockAdd extends Model
 {
     use HasFactory;
-
+ use TracksUserShop;
     protected $table = 'stock_adds';
 
     protected $fillable = [
@@ -25,7 +25,9 @@ class StockAdd extends Model
         'paid_amount',
         'due_amount',
         'note',
-        'source'
+        'source',
+          'user_id',
+        'shop_id'
     ];
 
     protected $casts = [

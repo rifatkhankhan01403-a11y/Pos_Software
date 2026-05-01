@@ -113,19 +113,40 @@
 <!-- HEADER -->
 <div class="row align-items-center mb-3 sale-header">
 
-    <div class="col-6">
+    <!-- LEFT TITLE -->
+    <div class="col-4">
         <h5 class="mb-0 fw-semibold">Sell History</h5>
     </div>
 
-    <div class="col-6 text-end">
-        <span class="text-muted small">Total Sales :</span>
-        <span class="fw-bold text-primary ms-1">
-            ${{ number_format($totalSales) }}
-        </span>
+    <!-- RIGHT SIDE (TOTAL + BUTTON) -->
+    <div class="col-8 d-flex justify-content-end align-items-center gap-3">
+
+        <!-- TOTAL SALES -->
+        <div>
+            <span class="text-muted small">Total Sales :</span>
+            <span class="fw-bold text-primary ms-1">
+                ${{ number_format($totalSales) }}
+            </span>
+        </div>
+
+        <!-- DOWNLOAD BUTTON -->
+        <a href="{{ route('sales.pdf', request()->all()) }}"
+       class="card border-0 shadow-sm px-3 py-2 text-decoration-none">
+
+        <div class="d-flex align-items-center gap-2">
+            <div class="icon-circle bg-danger-subtle">
+                <i class="bi bi-file-earmark-pdf text-danger"></i>
+            </div>
+
+            <div>
+                <div class="summary-title text-dark">Download PDF</div>
+            </div>
+        </div>
+    </a>
+
     </div>
 
 </div>
-
 <!-- FILTER -->
 <!-- FILTER -->
 <div class="card p-2 mb-3">
@@ -198,11 +219,12 @@
 
 <thead>
 <tr>
+    <th>Date</th>
 <th>Customer</th>
 <th>Mobile</th>
 <th>Items</th>
 <th>Amount</th>
-<th>Date</th>
+<th>Source</th>
 <th>Status</th>
 <th class="text-center">Action</th>
 </tr>
@@ -223,6 +245,10 @@ $status = $sale->source == 'Quick Sell'
 @endphp
 
 <tr>
+
+<td class="text-muted">
+{{ \Carbon\Carbon::parse($sale->created_at)->format('d M Y, h:i A') }}
+</td>
 
 <td class="customer-text">
 {{ $sale->customer_name ?? '-' }}
@@ -254,8 +280,16 @@ $status = $sale->source == 'Quick Sell'
 ${{ number_format($sale->total ?? 0) }}
 </td>
 
-<td class="text-muted">
-{{ \Carbon\Carbon::parse($sale->created_at)->format('d M Y, h:i A') }}
+<td>
+    @if($sale->source == 'Sell')
+        <span class="badge bg-primary">Sell</span>
+    @elseif($sale->source == 'Quick Sell')
+        <span class="badge bg-info text-dark">Quick Sell</span>
+    @elseif($sale->source == 'Condition Sales')
+        <span class="badge bg-warning text-dark">Condition</span>
+    @else
+        <span class="badge bg-secondary">Unknown</span>
+    @endif
 </td>
 
 <td>
@@ -266,7 +300,7 @@ ${{ number_format($sale->total ?? 0) }}
 @elseif($status == 'Cash+Due')
 <span class="badge bg-warning text-dark">Cash+Due</span>
 @else
-<span class="badge bg-info text-dark">Quick Sell</span>
+<span class="badge bg-info text-dark">Cash</span>
 @endif
 </td>
 

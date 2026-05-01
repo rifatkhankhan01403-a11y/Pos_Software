@@ -97,51 +97,58 @@ async function FillUpUpdateForm(id, filePath) {
 }
 
 async function update() {
-    let userId = localStorage.getItem('user_id'); // Add your user id for middleware
+
+    let userId = localStorage.getItem('user_id');
 
     let productCategoryUpdate = document.getElementById('productCategoryUpdate').value;
     let productNameUpdate = document.getElementById('productNameUpdate').value;
-    let productUnitUpdate = document.getElementById('productUnitUpdate').value;
     let productQuantityUpdate = document.getElementById('productQuantityUpdate').value;
     let productBuyPriceUpdate = document.getElementById('productBuyPriceUpdate').value;
     let productSellPriceUpdate = document.getElementById('productSellPriceUpdate').value;
     let productNoteUpdate = document.getElementById('productNoteUpdate').value;
     let updateID = document.getElementById('updateID').value;
-    let filePath = document.getElementById('filePath').value;
     let productImgUpdate = document.getElementById('productImgUpdate').files[0];
 
     if (!productCategoryUpdate) return errorToast("Category required!");
     if (!productNameUpdate) return errorToast("Name required!");
-    // if (!productUnitUpdate) return errorToast("Unit required!");
-
-    document.getElementById('update-modal').querySelector('.btn.bg-gradient-primary').click();
 
     let formData = new FormData();
     formData.append('id', updateID);
     formData.append('name', productNameUpdate);
-    // formData.append('unit', productUnitUpdate);
     formData.append('quantity', productQuantityUpdate);
     formData.append('buy_price', productBuyPriceUpdate);
     formData.append('sell_price', productSellPriceUpdate);
     formData.append('note', productNoteUpdate);
     formData.append('category_id', productCategoryUpdate);
-    formData.append('file_path', filePath);
-    if (productImgUpdate) formData.append('img', productImgUpdate);
+
+    if (productImgUpdate) {
+        formData.append('img', productImgUpdate);
+    }
 
     showLoader();
 
-    let res = await axios.post("/update-product", formData, {
-        headers: { 'content-type': 'multipart/form-data', id: userId }
-    });
+    try {
+        let res = await axios.post("/update-product", formData, {
+            headers: {
+                'content-type': 'multipart/form-data',
+                id: userId
+            }
+        });
 
-    hideLoader();
+        hideLoader();
 
-    if (res.status === 200 && res.data === 1) {
-        successToast("Product updated successfully");
-        document.getElementById("update-form").reset();
-        await getList();
-    } else {
-        errorToast("Update failed!");
+        if (res.data == 1) {
+            successToast("Product updated successfully");
+            document.getElementById("update-form").reset();
+            await getList();
+        } else {
+            errorToast("Update failed!");
+        }
+
+    } catch (error) {
+        hideLoader();
+        console.log(error);
+        errorToast("Server error!");
     }
 }
 </script>

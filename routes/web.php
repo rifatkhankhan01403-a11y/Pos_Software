@@ -17,6 +17,7 @@ use App\Http\Controllers\CashboxController;
 use App\Http\Controllers\DueController;
 use App\Http\Controllers\PurchaseBookController;
 
+use App\Http\Controllers\CodSaleController;
 use App\Http\Middleware\TokenVerificationMiddleware;
 
 use Illuminate\Support\Facades\Route;
@@ -63,14 +64,14 @@ Route::post('/stock-store', [StockAddController::class, 'CreateStockPurchase'])-
 
 
 //dashboard
-Route::get('/dashboard-data', [App\Http\Controllers\DashboardController::class,'getDashboardData']);
-Route::get('/dashboard-summary', [DashboardController::class, 'getDashboardSummary']);
+Route::get('/dashboard-data', [App\Http\Controllers\DashboardController::class,'getDashboardData'])->middleware([TokenVerificationMiddleware::class]);
+Route::get('/dashboard-summary', [DashboardController::class, 'getDashboardSummary'])->middleware([TokenVerificationMiddleware::class]);
 
 
 //purchase book
-Route::get('/purchase-book', [PurchaseBookController::class, 'purchaseBook']);
-Route::delete('/purchase-book/delete/{id}', [PurchaseBookController::class, 'deletePurchase']);
-
+Route::get('/purchase-book', [PurchaseBookController::class, 'purchaseBook'])->middleware([TokenVerificationMiddleware::class]);
+Route::delete('/purchase-book/delete/{id}', [PurchaseBookController::class, 'deletePurchase'])->middleware([TokenVerificationMiddleware::class]);
+Route::get('/purchase/pdf', [PurchaseBookController::class, 'downloadPdf'])->name('purchase.pdf')->middleware([TokenVerificationMiddleware::class]);
 
 //quick sell
 
@@ -97,35 +98,38 @@ Route::post("/update-product",[ProductController::class,'UpdateProduct'])->middl
 Route::get("/list-product",[ProductController::class,'ProductList'])->middleware([TokenVerificationMiddleware::class]);
 Route::post("/product-by-id",[ProductController::class,'ProductByID'])->middleware([TokenVerificationMiddleware::class]);
 
-
+Route::get("/search-customer",[CustomerController::class,'searchCustomer'])->middleware([TokenVerificationMiddleware::class]);
+Route::get("/search-product",[ProductController::class,'searchProduct'])->middleware([TokenVerificationMiddleware::class]);
 //expense book
 
-Route::get('/expense-list',[ExpenseController::class,'ExpenseList']);
+Route::get('/expense-list',[ExpenseController::class,'ExpenseList'])->middleware([TokenVerificationMiddleware::class]);
 
-Route::post('/create-expense',[ExpenseController::class,'CreateExpense']);
+Route::post('/create-expense',[ExpenseController::class,'CreateExpense'])->middleware([TokenVerificationMiddleware::class]);
 
-Route::post('/expense-by-id',[ExpenseController::class,'ExpenseByID']);
+Route::post('/expense-by-id',[ExpenseController::class,'ExpenseByID'])->middleware([TokenVerificationMiddleware::class]);
 
-Route::post('/update-expense',[ExpenseController::class,'UpdateExpense']);
+Route::post('/update-expense',[ExpenseController::class,'UpdateExpense'])->middleware([TokenVerificationMiddleware::class]);
 
-Route::post('/delete-expense',[ExpenseController::class,'DeleteExpense']);
+Route::post('/delete-expense',[ExpenseController::class,'DeleteExpense'])->middleware([TokenVerificationMiddleware::class]);
 
+Route::get('/expense/pdf', [ExpenseController::class, 'downloadExpensePdf'])->name('expense.pdf')->middleware([TokenVerificationMiddleware::class]);
 
 
 
 // sale book  page
-Route::get('/sale-history',[SaleHistoryController::class,'saleHistory']);
-Route::delete('/sale-history/delete/{id}',[SaleHistoryController::class,'deleteSale']);
-
+Route::get('/sale-history',[SaleHistoryController::class,'saleHistory'])->middleware([TokenVerificationMiddleware::class]);
+Route::delete('/sale-history/delete/{id}',[SaleHistoryController::class,'deleteSale'])->middleware([TokenVerificationMiddleware::class]);
+Route::get('/sales/pdf', [SaleHistoryController::class, 'downloadPdf'])
+    ->name('sales.pdf')->middleware([TokenVerificationMiddleware::class]);
 
 
 
 //due book
-Route::post('/due-store', [DueController::class, 'store'])->name('due.store');
-Route::get('/due-book', [DueController::class, 'dueBookPage']);
+Route::post('/due-store', [DueController::class, 'store'])->name('due.store')->middleware([TokenVerificationMiddleware::class]);
+Route::get('/due-book', [DueController::class, 'dueBookPage'])->middleware([TokenVerificationMiddleware::class]);
 //Route::get('/due/parties', [DueController::class, 'partyList'])->name('due.parties');
-Route::get('/party-list', [DueController::class, 'partyList']);
-Route::get('/party-ledger', [DueController::class, 'partyLedger']);
+Route::get('/party-list', [DueController::class, 'partyList'])->middleware([TokenVerificationMiddleware::class]);
+Route::get('/party-ledger', [DueController::class, 'partyLedger'])->middleware([TokenVerificationMiddleware::class]);
 
 
 
@@ -150,12 +154,15 @@ Route::post('/supplier-by-id',[SupplierController::class,'SupplierByID'])->middl
 Route::post('/invoice-create', [InvoiceBillingController::class, 'createInvoice'])
     ->middleware(TokenVerificationMiddleware::class);
 //quick sell
-Route::post('/quick-sell-store', [InvoiceBillingController::class, 'QuickSellStore']);
+Route::post('/quick-sell-store', [InvoiceBillingController::class, 'QuickSellStore'])->middleware([TokenVerificationMiddleware::class]);
 
 
 //cashbox
-Route::post('/cash-in', [CashboxController::class, 'cashIn']);
-Route::post('/cash-out', [CashboxController::class, 'cashOut']);
+Route::post('/cash-in', [CashboxController::class, 'cashIn'])->middleware([TokenVerificationMiddleware::class]);
+Route::post('/cash-out', [CashboxController::class, 'cashOut'])->middleware([TokenVerificationMiddleware::class]);
+Route::get('/cashbox/pdf', [CashboxController::class, 'downloadPdf'])->name('cashbox.pdf')->middleware([TokenVerificationMiddleware::class]);
+
+
 
 // SUMMARY & Report
 Route::get("/summary",[DashboardController::class,'Summary'])->middleware([TokenVerificationMiddleware::class]);
@@ -163,4 +170,17 @@ Route::get("/sales-report/{FormDate}/{ToDate}",[ReportController::class,'SalesRe
 
 
 
+
+//condition sale..
+
+
+
+    Route::get('/conditionSell', [CodSaleController::class, 'index'])->middleware([TokenVerificationMiddleware::class]);
+
+    Route::post('/cod-sale/store', [CodSaleController::class, 'store'])->middleware([TokenVerificationMiddleware::class]);
+
+    Route::get('/cod-sale/list', [CodSaleController::class, 'list'])->middleware([TokenVerificationMiddleware::class]);
+
+    Route::post('/cod-sale/mark-paid/{id}', [CodSaleController::class, 'markPaid'])->middleware([TokenVerificationMiddleware::class]);
+    Route::delete('/cod-sale/delete/{id}', [CodSaleController::class, 'delete'])->middleware([TokenVerificationMiddleware::class]);
 

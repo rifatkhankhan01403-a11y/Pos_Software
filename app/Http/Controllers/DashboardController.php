@@ -21,6 +21,8 @@ class DashboardController extends Controller
     {
         $filter = $request->filter ?? 'today';
 
+        $shopId = $request->auth_shop_id;
+
         /* DATE RANGE */
         if ($filter == 'today') {
 
@@ -51,7 +53,8 @@ class DashboardController extends Controller
         }
 
         /* SELL TOTAL (invoice_date - datetime) */
-        $sellQuery = InvoiceBilling::whereIn('source', ['Sell', 'Quick Sell']);
+        $sellQuery = InvoiceBilling::where('shop_id', $shopId)
+            ->whereIn('source', ['Sell', 'Quick Sell']);
 
         if ($start && $end) {
             $sellQuery->whereBetween('invoice_date', [$start, $end]);
@@ -60,7 +63,8 @@ class DashboardController extends Controller
         $sell = $sellQuery->sum('total');
 
         /* PURCHASE TOTAL (purchase_date - date) */
-        $purchaseQuery = StockAdd::where('source', 'Purchase');
+        $purchaseQuery = StockAdd::where('shop_id', $shopId)
+            ->where('source', 'Purchase');
 
         if ($start && $end) {
             $purchaseQuery->whereBetween('purchase_date', [
@@ -72,7 +76,7 @@ class DashboardController extends Controller
         $purchase = $purchaseQuery->sum('total_cost');
 
         /* EXPENSE TOTAL (date - date) */
-        $expenseQuery = Expense::query();
+        $expenseQuery = Expense::where('shop_id', $shopId);
 
         if ($start && $end) {
             $expenseQuery->whereBetween('date', [
@@ -90,49 +94,58 @@ class DashboardController extends Controller
         ]);
     }
 
-public function getDashboardSummary(Request $request)
-{
-    // =====================
-    // CUSTOMER RECEIVABLE (same logic as partyList)
-    // =====================
-    $customer = InvoiceBilling::selectRaw('
-        SUM(total) as total_amount,
-        SUM(due) as total_due,
-        SUM(paid) as total_paid
-    ')->first();
+    public function getDashboardSummary(Request $request)
+    {
 
-    $receivable = ($customer->total_amount ?? 0)- ($customer->total_paid?? 0);
+        $shopId = $request->auth_shop_id;
 
-    // =====================
-    // SUPPLIER PAYABLE (same logic as partyList)
-    // =====================
-    $supplier = StockAdd::selectRaw('
-        SUM(paid_amount) as total_paid,
-        SUM(total_cost) as total_amount
-    ')->first();
+        // =====================
+        // CUSTOMER RECEIVABLE
+        // =====================
+        $customer = InvoiceBilling::where('shop_id', $shopId)
+            ->selectRaw('
+                SUM(total) as total_amount,
+                SUM(due) as total_due,
+                SUM(paid) as total_paid
+            ')->first();
 
-    $payable = ($supplier->total_amount ?? 0) - ($supplier->total_paid ?? 0);
+        $receivable = ($customer->total_amount ?? 0) - ($customer->total_paid ?? 0);
 
 
-    // =====================
-    // STOCK
-    // =====================
-    $stock = Product::sum('quantity');
+        // =====================
+        // SUPPLIER PAYABLE
+        // =====================
+        $supplier = StockAdd::where('shop_id', $shopId)
+            ->selectRaw('
+                SUM(paid_amount) as total_paid,
+                SUM(total_cost) as total_amount
+            ')->first();
 
-  $receivable = InvoiceBilling::sum('total') - InvoiceBilling::sum('paid');
-
-$payable = StockAdd::sum('total_cost') - StockAdd::sum('paid_amount');
-
-$expense = Expense::sum('amount');
-
-$net = ($receivable - $payable) - $expense;
+        $payable = ($supplier->total_amount ?? 0) - ($supplier->total_paid ?? 0);
 
 
-    return response()->json([
-        'receivable' => $receivable,
-        'payable'    => $payable,
-        'net'        => $net,
-        'stock'      => $stock
-    ]);
-}
+        // =====================
+        // STOCK
+        // =====================
+        $stock = Product::where('shop_id', $shopId)->sum('quantity');
+
+
+        $receivable = InvoiceBilling::where('shop_id', $shopId)->sum('total')
+            - InvoiceBilling::where('shop_id', $shopId)->sum('paid');
+
+        $payable = StockAdd::where('shop_id', $shopId)->sum('total_cost')
+            - StockAdd::where('shop_id', $shopId)->sum('paid_amount');
+
+        $expense = Expense::where('shop_id', $shopId)->sum('amount');
+
+        $net = ($receivable - $payable) - $expense;
+
+
+        return response()->json([
+            'receivable' => $receivable,
+            'payable'    => $payable,
+            'net'        => $net,
+            'stock'      => $stock
+        ]);
+    }
 }

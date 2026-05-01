@@ -2,10 +2,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-
+use App\Traits\TracksUserShop;
 class InvoiceBilling extends Model
 {
-    protected $table = 'invoice_billings'; // IMPORTANT
+
+use TracksUserShop;
+protected $table = 'invoice_billings'; // IMPORTANT
 
     protected $fillable = [
         'customer_id',
@@ -21,7 +23,11 @@ class InvoiceBilling extends Model
         'invoice_date',
         'due_date',
         'profit',
-        'source'
+        'source',
+        'note',
+        'courier',
+           'user_id',
+        'shop_id'
     ];
 
     protected $casts = [

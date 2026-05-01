@@ -56,22 +56,21 @@ function saveSupplier() {
         return;
     }
 
-    axios.post('/create-supplier', formData, {
-        headers: {
-            'Content-Type': 'multipart/form-data',
-            'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
-            'id': '1' // replace with dynamic user header if needed
-        }
-    })
+   axios.post('/create-supplier', formData, {
+    headers: {
+        'Content-Type': 'multipart/form-data',
+
+    }
+})
     .then(res => {
-        alert('Supplier added successfully!');
+        successToast('Supplier added successfully!');
         form.reset();
         const modalEl = document.getElementById('createSupplierModal');
         const modal = bootstrap.Modal.getInstance(modalEl);
         modal.hide();
 
         // Optionally reload supplier list
-        loadSupplierList();
+       loadSuppliers();
     })
     .catch(err => {
         if(err.response && err.response.data) {
@@ -80,9 +79,9 @@ function saveSupplier() {
             for (let key in errors) {
                 msg += errors[key].join(', ') + '\n';
             }
-            alert(msg || 'Error adding supplier!');
+          errorToast('Error adding supplier!');
         } else {
-            alert('Error adding supplier!');
+             errorToast('Error adding supplier!');
         }
         console.error(err);
     });

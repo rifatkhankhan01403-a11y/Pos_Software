@@ -303,17 +303,45 @@ const picker = flatpickr("#dateRange", {
 @endif
 
 <!-- HEADER -->
-<div class="row mb-3">
+<div class="row mb-3 align-items-center">
+
+    <!-- LEFT SIDE -->
     <div class="col-6">
-        <h5 class="fw-semibold">Purchase Book</h5>
+        <h5 class="fw-semibold mb-0">Purchase Book</h5>
     </div>
 
-    <div class="col-6 text-end">
-        <span class="text-muted small">Total Purchase :</span>
-        <span class="fw-bold text-primary">
-            ${{ number_format($totalPurchase) }}
-        </span>
+    <!-- RIGHT SIDE -->
+    <div class="col-6 d-flex justify-content-end align-items-center gap-2">
+
+        <!-- TOTAL PURCHASE -->
+        <div>
+            <span class="text-muted small">Total Purchase :</span>
+            <span class="fw-bold text-primary">
+                ${{ number_format($totalPurchase) }}
+            </span>
+        </div>
+
+        <!-- DOWNLOAD PDF BUTTON -->
+        <a href="{{ route('purchase.pdf', request()->all()) }}"
+           class="card border-0 shadow-sm px-3 py-2 text-decoration-none">
+
+            <div class="d-flex align-items-center gap-2">
+
+                <div class="icon-circle bg-danger-subtle">
+                    <i class="bi bi-file-earmark-pdf text-danger"></i>
+                </div>
+
+                <div>
+                    <div class="summary-title text-dark">
+                        Download PDF
+                    </div>
+                </div>
+
+            </div>
+        </a>
+
     </div>
+
 </div>
 
 <!-- FILTER -->

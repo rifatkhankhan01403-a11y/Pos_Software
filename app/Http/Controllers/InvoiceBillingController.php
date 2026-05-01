@@ -6,20 +6,26 @@ use Illuminate\Http\Request;
 use App\Models\InvoiceBilling;
 use App\Models\Product;
 use Illuminate\View\View;
+
 class InvoiceBillingController extends Controller
 {
 
-
- function SalePage(): View {
+    /* =========================
+       SALE PAGE
+    ========================= */
+    function SalePage(): View {
         return view('pages.dashboard.sale-page');
     }
 
 
-
-
- function createInvoice(Request $request)
+    /* =========================
+       CREATE INVOICE
+    ========================= */
+    function createInvoice(Request $request)
     {
         try {
+
+            $shopId = $request->auth_shop_id;
 
             $totalProfit = 0;
             $updatedItems = [];
@@ -34,28 +40,27 @@ class InvoiceBillingController extends Controller
             foreach ($request->items as $item) {
 
                 $qty = (float) $item['qty'];
-                $salePrice = (float) $item['sale_price']; // TOTAL line price
+                $salePrice = (float) $item['sale_price'];
 
-                $product = Product::find($item['product_id']);
+                // PRODUCT MUST BELONG TO SAME SHOP
+                $product = Product::where('shop_id',$shopId)
+                    ->where('id',$item['product_id'])
+                    ->first();
 
                 if ($product) {
 
                     // =========================
-                    // ✔ FIX PROFIT CALCULATION
+                    // PROFIT CALCULATION
                     // =========================
-
                     $buyPrice = (float) $product->buy_price;
                     $sellPrice = (float) $product->sell_price;
 
-                    // per unit profit × qty
                     $profit = ($sellPrice - $buyPrice) * $qty;
-
                     $totalProfit += $profit;
 
                     // =========================
-                    // ✔ FIX STOCK UPDATE
+                    // STOCK UPDATE
                     // =========================
-
                     $product->quantity = (float) $product->quantity - $qty;
 
                     if ($product->quantity < 0) {
@@ -64,16 +69,15 @@ class InvoiceBillingController extends Controller
 
                     $product->save();
 
-                    // attach profit per item
-                    $item['profit'] = round($profit, 2);
+                    $item['profit'] = round($profit,2);
                 }
 
                 $updatedItems[] = $item;
             }
 
-            // =========================
-            // FRONTEND TOTALS ONLY
-            // =========================
+            /* =========================
+               FRONTEND TOTALS
+            ========================= */
 
             $subtotal = (float) $request->total;
             $discount = (float) $request->discount;
@@ -83,14 +87,16 @@ class InvoiceBillingController extends Controller
             $paid = (float) $request->paid;
             $due = (float) $request->due;
 
-            // safety only
             if ($due < 0) $due = 0;
 
-            // =========================
-            // SAVE
-            // =========================
+            /* =========================
+               SAVE INVOICE
+            ========================= */
 
             $invoice = InvoiceBilling::create([
+
+                'shop_id' => $shopId,
+
                 'customer_id' => $request->customer_id,
                 'customer_name' => $request->customer_name,
                 'customer_mobile' => $request->customer_mobile,
@@ -105,7 +111,7 @@ class InvoiceBillingController extends Controller
                 'paid' => $paid,
                 'due' => $due,
 
-                'profit' => round($totalProfit, 2),
+                'profit' => round($totalProfit,2),
 
                 'invoice_date' => now(),
                 'due_date' => $request->due_date,
@@ -120,38 +126,53 @@ class InvoiceBillingController extends Controller
             ]);
 
         } catch (\Exception $e) {
+
             return response()->json([
                 'status' => false,
                 'error' => $e->getMessage()
             ]);
+
         }
     }
 
 
+    /* =========================
+       QUICK SELL
+    ========================= */
     public function QuickSellStore(Request $request)
-{
-    try {
+    {
+        try {
 
-        $sell = InvoiceBilling::create([
-            'customer_name' => $request->customer_name,
-            'customer_mobile' => $request->customer_mobile,
-            'paid' => $request->amount,
-            'total'=>$request->amount,
-            'profit' => $request->profit,
-            'invoice_date' => $request->sell_date,
-            'source' => 'Quick Sell'
-        ]);
+            $shopId = $request->auth_shop_id;
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Quick sell saved successfully'
-        ]);
+            InvoiceBilling::create([
 
-    } catch (\Exception $e) {
-        return response()->json([
-            'status' => false,
-            'error' => $e->getMessage()
-        ]);
+                'shop_id' => $shopId,
+
+                'customer_name' => $request->customer_name,
+                'customer_mobile' => $request->customer_mobile,
+
+                'paid' => $request->amount,
+                'total'=> $request->amount,
+                'profit' => $request->profit,
+
+                'invoice_date' => $request->sell_date,
+
+                'source' => 'Quick Sell'
+            ]);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Quick sell saved successfully'
+            ]);
+
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'status' => false,
+                'error' => $e->getMessage()
+            ]);
+
+        }
     }
-}
 }

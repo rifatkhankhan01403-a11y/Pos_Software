@@ -23,6 +23,8 @@ return new class extends Migration
                   ->cascadeOnUpdate()
                   ->restrictOnDelete();
 
+$table->unsignedBigInteger('shop_id');
+
             $table->timestamps();
         });
     }

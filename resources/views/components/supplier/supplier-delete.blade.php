@@ -32,11 +32,16 @@ async function deleteSupplier() {
         });
         hideLoader();
 
-        if(res.status === 200) {
-            $("#deleteSupplierModal").modal('hide');
-            showMessage('Supplier deleted successfully'); // Your custom message function
-            loadSuppliers(); // Refresh table
-        }
+      if(res.status === 200) {
+
+    const modalEl = document.getElementById('deleteSupplierModal');
+    const modal = bootstrap.Modal.getInstance(modalEl);
+    modal.hide();
+
+    successToast('Supplier deleted successfully');
+
+    await loadSuppliers(); // IMPORTANT: wait for reload
+}
     } catch (err) {
         hideLoader();
         console.error(err);

@@ -8,15 +8,21 @@ use Illuminate\Support\Facades\File;
 
 class SupplierController extends Controller
 {
-    // Show Supplier Page
+    // =========================
+    // SUPPLIER PAGE
+    // =========================
     function SupplierPage() {
         return view('pages.dashboard.supplier-page');
     }
 
-    // Create Supplier
+
+    // =========================
+    // CREATE SUPPLIER
+    // =========================
     function CreateSupplier(Request $request) {
 
-        // Backend validation: must
+        $shopId = $request->auth_shop_id;
+
         $request->validate([
             'email' => 'nullable|email|max:255',
             'name' => 'required|string|max:255',
@@ -27,6 +33,7 @@ class SupplierController extends Controller
         ]);
 
         $img_url = null;
+
         if ($request->hasFile('img')) {
             $img = $request->file('img');
             $t = time();
@@ -37,6 +44,7 @@ class SupplierController extends Controller
         }
 
         return Supplier::create([
+            'shop_id' => $shopId,
             'email' => $request->input('email'),
             'name' => $request->input('name'),
             'mobile' => $request->input('mobile'),
@@ -46,18 +54,38 @@ class SupplierController extends Controller
         ]);
     }
 
-    // List Suppliers
+
+    // =========================
+    // LIST SUPPLIERS
+    // =========================
     function ListSupplier(Request $request) {
-        return Supplier::all();
+
+        $shopId = $request->auth_shop_id;
+
+        return Supplier::where('shop_id',$shopId)->get();
     }
 
-    // Get Supplier by ID
+
+    // =========================
+    // GET SUPPLIER BY ID
+    // =========================
     function SupplierByID(Request $request) {
-        return Supplier::where('id', $request->input('id'))->first();
+
+        $shopId = $request->auth_shop_id;
+
+        return Supplier::where('shop_id',$shopId)
+            ->where('id', $request->input('id'))
+            ->first();
     }
 
-    // Update Supplier
+
+    // =========================
+    // UPDATE SUPPLIER
+    // =========================
     function UpdateSupplier(Request $request) {
+
+        $shopId = $request->auth_shop_id;
+
         $request->validate([
             'id' => 'required|integer|exists:suppliers,id',
             'email' => 'nullable|email|max:255',
@@ -70,6 +98,10 @@ class SupplierController extends Controller
 
         $supplier_id = $request->input('id');
 
+        $supplier = Supplier::where('shop_id',$shopId)
+            ->where('id',$supplier_id)
+            ->firstOrFail();
+
         $data = [
             'email' => $request->input('email'),
             'name' => $request->input('name'),
@@ -79,6 +111,7 @@ class SupplierController extends Controller
         ];
 
         if ($request->hasFile('img')) {
+
             $img = $request->file('img');
             $t = time();
             $file_name = $img->getClientOriginalName();
@@ -86,23 +119,37 @@ class SupplierController extends Controller
             $img_url = "uploads/suppliers/{$img_name}";
             $img->move(public_path('uploads/suppliers'), $img_name);
 
-            // Delete old image
-            $old_path = $request->input('file_path');
-            if ($old_path) File::delete(public_path($old_path));
+            // delete old image
+            if ($supplier->img_url) {
+                File::delete(public_path($supplier->img_url));
+            }
 
             $data['img_url'] = $img_url;
         }
 
-        return Supplier::where('id', $supplier_id)->update($data);
+        return Supplier::where('shop_id',$shopId)
+            ->where('id',$supplier_id)
+            ->update($data);
     }
 
-    // Delete Supplier
+
+    // =========================
+    // DELETE SUPPLIER
+    // =========================
     function DeleteSupplier(Request $request) {
+
+        $shopId = $request->auth_shop_id;
+
         $supplier_id = $request->input('id');
-        $file_path = $request->input('file_path');
 
-        if ($file_path) File::delete(public_path($file_path));
+        $supplier = Supplier::where('shop_id',$shopId)
+            ->where('id',$supplier_id)
+            ->firstOrFail();
 
-        return Supplier::where('id', $supplier_id)->delete();
+        if ($supplier->img_url) {
+            File::delete(public_path($supplier->img_url));
+        }
+
+        return $supplier->delete();
     }
 }

@@ -18,6 +18,10 @@ return new class extends Migration
         $table->string('mobile');
         $table->text('address')->nullable();
         $table->text('note')->nullable();
+            $table->unsignedBigInteger('user_id');
+
+$table->unsignedBigInteger('shop_id');
+
         $table->string('img_url')->nullable();
         $table->timestamps();
     });

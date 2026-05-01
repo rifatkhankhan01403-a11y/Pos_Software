@@ -7,154 +7,153 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use App\Models\InvoiceBilling;
 use App\Models\StockAdd;
 use App\Models\Expense;
+use Illuminate\View\View;
+use Carbon\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\User;
 
 class CashboxController extends Controller
 {
- public function cashBox(Request $request)
-{
 
-    // =========================
-    // FILTER VALUES
-    // =========================
-    $type = $request->get('type');
-    $startDate = $request->get('start_date');
-    $endDate = $request->get('end_date');
-    $perPage = $request->get('per_page', 10);
-    $page = $request->get('page', 1);
+    public function cashBox(Request $request): View
+    {
+        // =========================
+        // FILTER VALUES
+        // =========================
+        $type = $request->get('type');
+        $startDate = $request->get('start_date');
+        $endDate = $request->get('end_date');
+        $perPage = $request->get('per_page', 10);
+        $page = $request->get('page', 1);
 
+        $shopId = $request->auth_shop_id;
 
-    // =========================
-    // CASH IN
-    // =========================
-    $cashInData = InvoiceBilling::select(
-        'paid as amount',
-        'created_at',
-        'source',
-        'customer_name'
-    )
-    ->get()
-    ->map(function ($item) {
-        return [
-            'type' => 'Cash In',
-            'date' => $item->created_at,
-            'source' => $item->source ?? 'Cash In',
-            'note' => '-',
-            'amount' => $item->amount
-        ];
-    });
+        // =========================
+        // BASE QUERIES
+        // =========================
+        $invoiceQuery = InvoiceBilling::where('shop_id', $shopId);
+        $stockQuery = StockAdd::where('shop_id', $shopId);
+        $expenseQuery = Expense::where('shop_id', $shopId);
 
+        // ✅ FIXED DATE FILTER
+        if ($startDate && $endDate) {
 
-    // =========================
-    // CASH OUT (STOCK)
-    // =========================
-    $stockOutData = StockAdd::select(
-        'paid_amount as amount',
-        'created_at',
-        'source',
-        'note'
-    )
-    ->get()
-    ->map(function ($item) {
-        return [
-            'type' => 'Cash Out',
-            'date' => $item->created_at,
-            'source' => $item->source ?? 'Cash Out',
-            'note' => $item->note ?? '-',
-            'amount' => $item->amount
-        ];
-    });
+            $start = Carbon::parse($startDate)->startOfDay();
+            $end = Carbon::parse($endDate)->endOfDay();
 
+            $invoiceQuery->whereBetween('created_at', [$start, $end]);
+            $stockQuery->whereBetween('created_at', [$start, $end]);
+            $expenseQuery->whereBetween('created_at', [$start, $end]);
+        }
 
-    // =========================
-    // CASH OUT (EXPENSE)
-    // =========================
-    $expenseData = Expense::select(
-        'amount',
-        'created_at',
-        'category',
-        'note'
-    )
-    ->get()
-    ->map(function ($item) {
-        return [
-            'type' => 'Cash Out',
-            'date' => $item->created_at,
-            'source' => 'Expense',
-            'note' => $item->note ?? $item->category ?? '-',
-            'amount' => $item->amount
-        ];
-    });
+        // =========================
+        // CASH IN
+        // =========================
+        $cashInData = $invoiceQuery
+            ->select('paid as amount', 'created_at', 'source')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'type' => 'Cash In',
+                    'date' => $item->created_at,
+                    'source' => $item->source ?? 'Cash In',
+                    'note' => '-',
+                    'amount' => $item->amount
+                ];
+            });
 
+        // =========================
+        // CASH OUT (STOCK)
+        // =========================
+        $stockOutData = $stockQuery
+            ->select('paid_amount as amount', 'created_at', 'source', 'note')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'type' => 'Cash Out',
+                    'date' => $item->created_at,
+                    'source' => $item->source ?? 'Cash Out',
+                    'note' => $item->note ?? '-',
+                    'amount' => $item->amount
+                ];
+            });
 
-    // =========================
-    // MERGE ALL
-    // =========================
-    $transactions = collect()
-        ->merge($cashInData)
-        ->merge($stockOutData)
-        ->merge($expenseData)
-        ->sortByDesc('date')
-        ->values();
+        // =========================
+        // CASH OUT (EXPENSE)
+        // =========================
+        $expenseData = $expenseQuery
+            ->select('amount', 'created_at', 'category', 'note')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'type' => 'Cash Out',
+                    'date' => $item->created_at,
+                    'source' => 'Expense',
+                    'note' => $item->note ?? $item->category ?? '-',
+                    'amount' => $item->amount
+                ];
+            });
 
+        // =========================
+        // MERGE ALL
+        // =========================
+        $transactions = collect()
+            ->merge($cashInData)
+            ->merge($stockOutData)
+            ->merge($expenseData)
+            ->sortByDesc('date')
+            ->values();
 
-    // =========================
-    // FILTER BY TYPE
-    // =========================
-    if ($type) {
-        $transactions = $transactions->where('type', $type)->values();
+        // =========================
+        // FILTER BY TYPE
+        // =========================
+        if ($type) {
+            $transactions = $transactions->where('type', $type)->values();
+        }
+
+        // ❌ REMOVED duplicate date filtering (IMPORTANT)
+
+        // =========================
+        // PAGINATION
+        // =========================
+        $transactionsPaginated = new LengthAwarePaginator(
+            $transactions->forPage($page, $perPage),
+            $transactions->count(),
+            $perPage,
+            $page,
+            [
+                'path' => $request->url(),
+                'query' => $request->query()
+            ]
+        );
+
+        // =========================
+        // SUMMARY CARDS
+        // =========================
+        $cashIn = InvoiceBilling::where('shop_id', $shopId)->sum('paid');
+
+        $cashOut =
+            StockAdd::where('shop_id', $shopId)->sum('paid_amount')
+            +
+            Expense::where('shop_id', $shopId)->sum('amount');
+
+        $balance = $cashIn - $cashOut;
+
+        // =========================
+        // TABLE TOTALS
+        // =========================
+        $totalTransactions = $transactions->count();
+        $totalAmount = $transactions->sum('amount');
+
+        return view('pages.dashboard.cashbox-page', [
+            'transactions' => $transactionsPaginated,
+            'cashIn' => $cashIn,
+            'cashOut' => $cashOut,
+            'balance' => $balance,
+            'totalTransactions' => $totalTransactions,
+            'totalAmount' => $totalAmount,
+        ]);
     }
-
-
-    // =========================
-    // FILTER BY DATE RANGE
-    // =========================
-    if ($startDate && $endDate) {
-        $transactions = $transactions->filter(function ($item) use ($startDate, $endDate) {
-            $date = \Carbon\Carbon::parse($item['date'])->format('Y-m-d');
-            return $date >= $startDate && $date <= $endDate;
-        })->values();
-    }
-
-
-    // =========================
-    // PAGINATION
-    // =========================
-    $transactionsPaginated = new LengthAwarePaginator(
-        $transactions->forPage($page, $perPage),
-        $transactions->count(),
-        $perPage,
-        $page,
-        [
-            'path' => $request->url(),
-            'query' => $request->query()
-        ]
-    );
-
-
-    // =========================
-    // SUMMARY CARDS
-    // =========================
-    $cashIn = InvoiceBilling::sum('paid');
-    $cashOut = StockAdd::sum('paid_amount') + Expense::sum('amount');
-    $balance = $cashIn - $cashOut;
-
-
-    // =========================
-    // TABLE TOTALS
-    // =========================
-    $totalTransactions = $transactions->count();
-    $totalAmount = $transactions->sum('amount');
-
-
-    return view('pages.dashboard.cashbox-page', [
-        'transactions' => $transactionsPaginated,
-        'cashIn' => $cashIn,
-        'cashOut' => $cashOut,
-        'balance' => $balance,
-        'totalTransactions' => $totalTransactions,
-        'totalAmount' => $totalAmount,
-    ]);
-}
 
 
     // =========================
@@ -168,9 +167,13 @@ class CashboxController extends Controller
         ]);
 
         $invoice = new InvoiceBilling();
+
         $invoice->paid = $request->amount;
         $invoice->invoice_date = now();
         $invoice->source = 'Cash In';
+        $invoice->note = $request->note;
+        $invoice->shop_id = $request->auth_shop_id;
+
         $invoice->save();
 
         return response()->json([
@@ -178,7 +181,6 @@ class CashboxController extends Controller
             'message' => 'Cash In Saved'
         ]);
     }
-
 
 
     // =========================
@@ -192,16 +194,108 @@ class CashboxController extends Controller
         ]);
 
         $purchase = new StockAdd();
+
         $purchase->invoice_no = 'CASHOUT-' . time();
         $purchase->purchase_date = now();
         $purchase->paid_amount = $request->amount;
         $purchase->source = 'Cash Out';
         $purchase->note = $request->note;
+        $purchase->shop_id = $request->auth_shop_id;
+
         $purchase->save();
 
         return response()->json([
             'status' => 'success',
             'message' => 'Cash Out Saved'
         ]);
+    }
+
+
+    // =========================
+    // DOWNLOAD PDF
+    // =========================
+    public function downloadPdf(Request $request)
+    {
+        $type = $request->get('type');
+        $startDate = $request->get('start_date');
+        $endDate = $request->get('end_date');
+
+        $shopId = $request->auth_shop_id;
+
+        $shop = User::where('shop_id', $shopId)
+            ->where('role', 'owner')
+            ->first();
+
+        $invoiceQuery = InvoiceBilling::where('shop_id', $shopId);
+        $stockQuery = StockAdd::where('shop_id', $shopId);
+        $expenseQuery = Expense::where('shop_id', $shopId);
+
+        // ✅ FIXED DATE FILTER HERE ALSO
+        if ($startDate && $endDate) {
+
+            $start = Carbon::parse($startDate)->startOfDay();
+            $end = Carbon::parse($endDate)->endOfDay();
+
+            $invoiceQuery->whereBetween('created_at', [$start, $end]);
+            $stockQuery->whereBetween('created_at', [$start, $end]);
+            $expenseQuery->whereBetween('created_at', [$start, $end]);
+        }
+
+        $cashInData = $invoiceQuery->get()->map(function ($item) {
+            return [
+                'type' => 'Cash In',
+                'date' => $item->created_at,
+                'source' => $item->source,
+                'note' => $item->note,
+                'amount' => $item->paid
+            ];
+        });
+
+        $stockOutData = $stockQuery->get()->map(function ($item) {
+            return [
+                'type' => 'Cash Out',
+                'date' => $item->created_at,
+                'source' => $item->source,
+                'note' => $item->note,
+                'amount' => $item->paid_amount
+            ];
+        });
+
+        $expenseData = $expenseQuery->get()->map(function ($item) {
+            return [
+                'type' => 'Cash Out',
+                'date' => $item->created_at,
+                'source' => 'Expense',
+                'note' => $item->note,
+                'amount' => $item->amount
+            ];
+        });
+
+        $transactions = collect()
+            ->merge($cashInData)
+            ->merge($stockOutData)
+            ->merge($expenseData)
+            ->sortByDesc('date')
+            ->values();
+
+        if ($type) {
+            $transactions = $transactions->where('type', $type)->values();
+        }
+
+        $totalIn = $transactions->where('type', 'Cash In')->sum('amount');
+        $totalOut = $transactions->where('type', 'Cash Out')->sum('amount');
+        $balance = $totalIn - $totalOut;
+
+        $pdf = Pdf::loadView('pdf.cashbox', [
+            'transactions' => $transactions,
+            'shop' => $shop,
+            'totalIn' => $totalIn,
+            'totalOut' => $totalOut,
+            'balance' => $balance,
+            'startDate' => $startDate,
+            'endDate' => $endDate
+        ])->setPaper('a4');
+
+        return $pdf->download('cashbox-report.pdf');
     }
 }

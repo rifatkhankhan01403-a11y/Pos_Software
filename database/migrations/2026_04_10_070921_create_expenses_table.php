@@ -25,6 +25,10 @@ return new class extends Migration
 
     $table->text('note')->nullable();
 
+            $table->unsignedBigInteger('user_id');
+
+$table->unsignedBigInteger('shop_id');
+
     $table->timestamps();
 });
     }

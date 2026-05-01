@@ -14,8 +14,8 @@ return new class extends Migration
     Schema::create('stock_adds', function (Blueprint $table) {
         $table->id();
 
-        // invoice
-        $table->string('invoice_no')->unique();
+        // invoice>unique();
+        $table->string('invoice_no')->nullable();
 
         // supplier (one supplier per purchase)
         $table->unsignedBigInteger('supplier_id')->nullable();
@@ -40,7 +40,8 @@ return new class extends Migration
 
         // optional note
         $table->text('note')->nullable();
-
+  $table->unsignedBigInteger('user_id')->nullable();
+   $table->unsignedBigInteger('shop_id')->nullable();
         $table->timestamps();
     });
 }

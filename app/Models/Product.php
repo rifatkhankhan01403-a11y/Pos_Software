@@ -4,10 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
+use App\Traits\TracksUserShop;
 class Product extends Model
 {
-
+ use TracksUserShop;
   protected $fillable = [
     'user_id',
     'category_id',
@@ -18,7 +18,9 @@ class Product extends Model
     'buy_price',
     'sell_price',
     'note',
-    'img_url'
+    'img_url',
+     'user_id',
+        'shop_id'
 ];
 public function category()
 {

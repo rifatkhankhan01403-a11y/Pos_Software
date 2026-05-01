@@ -4,12 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
+use App\Traits\TracksUserShop;
 
 class Supplier extends Model
 {
     use HasFactory;
-
+ use TracksUserShop;
     protected $fillable = [
         'email',
         'name',
@@ -17,7 +17,9 @@ class Supplier extends Model
         'email',
         'address',
         'note',
-        'img_url'
+        'img_url',
+          'user_id',
+        'shop_id'
     ];
 
 

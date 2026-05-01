@@ -11,17 +11,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
-            $table->id();
-            $table->string('firstName', 50);
-            $table->string('lastName', 50);
-            $table->string('email', 50)->unique();
-            $table->string('mobile', 50);
-            $table->string('password', 255);  // Increase length to 255
-            $table->string('otp', 10);
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
-        });
+       Schema::create('users', function (Blueprint $table) {
+    $table->id();
+    $table->string('firstName', 50);
+    $table->string('email', 50)->unique();
+    $table->string('mobile', 50);
+    $table->string('password', 255);
+
+    // NEW FIELDS
+    $table->string('role', 20)->nullable(); // owner, manager, employee
+    $table->unsignedBigInteger('shop_id')->nullable();
+    $table->string('shop_name', 100)->nullable();
+$table->text('login_token')->nullable();
+    $table->string('otp', 10)->nullable();
+    $table->timestamps();
+});
     }
 
 

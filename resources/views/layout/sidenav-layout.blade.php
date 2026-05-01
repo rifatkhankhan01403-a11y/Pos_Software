@@ -210,7 +210,10 @@
         <i class="bi bi-lightning-charge"></i>
         <span class="side-bar-item-caption">Quick Sell</span>
     </a>
-
+  <a href="{{url('/conditionSell')}}" class="side-bar-item">
+        <i class="bi bi-cart-check"></i>
+        <span class="side-bar-item-caption">Condition Sell</span>
+    </a>
 
 
     <!-- PRODUCTS -->

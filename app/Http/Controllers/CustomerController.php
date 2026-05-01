@@ -9,50 +9,87 @@ use Illuminate\View\View;
 class CustomerController extends Controller
 {
 
-    function CustomerPage():View{
+    function CustomerPage(): View
+    {
         return view('pages.dashboard.customer-page');
     }
 
-  function CustomerCreate(Request $request){
-    $user_id = $request->header('id');
-    $customer = Customer::create([
-        'name' => $request->input('name'),
-        'email' => $request->input('email'),
-        'mobile' => $request->input('mobile'),
-        'user_id' => $user_id
-    ]);
 
-    return response()->json($customer, 201); // Important: return JSON with 201 status
-}
+    // CREATE CUSTOMER
+    function CustomerCreate(Request $request)
+    {
+        $customer = Customer::create([
+            'name'   => $request->name,
+            'email'  => $request->email,
+            'mobile' => $request->mobile
+        ]);
 
-function CustomerList(Request $request){
-    // Return all customers ordered by id ascending (oldest first, latest at bottom)
-    return Customer::orderBy('id', 'asc')->get();
-}
-    function CustomerDelete(Request $request){
-        $customer_id=$request->input('id');
-        $user_id=$request->header('id');
-        return Customer::where('id',$customer_id)->where('user_id',$user_id)->delete();
-    }
-
-
-    function CustomerByID(Request $request){
-        $customer_id=$request->input('id');
-        $user_id=$request->header('id');
-        return Customer::where('id',$customer_id)->where('user_id',$user_id)->first();
-    }
-
-
-     function CustomerUpdate(Request $request){
-        $customer_id=$request->input('id');
-        $user_id=$request->header('id');
-        return Customer::where('id',$customer_id)->where('user_id',$user_id)->update([
-            'name'=>$request->input('name'),
-            'email'=>$request->input('email'),
-            'mobile'=>$request->input('mobile'),
+        return response()->json([
+            'status' => 'success',
+            'data'   => $customer
         ]);
     }
 
+
+    // LIST CUSTOMERS (ONLY SAME SHOP)
+    function CustomerList(Request $request)
+    {
+        return Customer::where('shop_id', $request->auth_shop_id)
+            ->orderBy('id', 'desc')
+            ->get();
+    }
+
+
+    // DELETE CUSTOMER
+  function CustomerDelete(Request $request)
+{
+    $deleted = Customer::where('id', $request->id)
+        ->where('shop_id', $request->auth_shop_id)
+        ->delete();
+
+    return response()->json([
+        'status' => 'success',
+        'deleted' => $deleted
+    ]);
+}
+
+
+    // GET CUSTOMER BY ID
+    function CustomerByID(Request $request)
+    {
+        return Customer::where('id', $request->id)
+            ->where('shop_id', $request->auth_shop_id)
+            ->first();
+    }
+
+
+    // UPDATE CUSTOMER
+    function CustomerUpdate(Request $request)
+    {
+        return Customer::where('id', $request->id)
+            ->where('shop_id', $request->auth_shop_id)
+            ->update([
+                'name'   => $request->name,
+                'email'  => $request->email,
+                'mobile' => $request->mobile
+            ]);
+    }
+public function searchCustomer(Request $request)
+{
+    $shopId = $request->auth_shop_id;
+
+    $query = $request->get('keyword', '');
+
+    $data = Customer::where('shop_id', $shopId)
+        ->where(function ($q) use ($query) {
+            $q->where('name', 'like', "%{$query}%")
+              ->orWhere('mobile', 'like', "%{$query}%");
+        })
+        ->limit(10)
+        ->get();
+
+    return response()->json($data);
+}
 
 
 }

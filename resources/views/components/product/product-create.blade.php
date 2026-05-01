@@ -174,7 +174,7 @@
             hideLoader();
 
             if(res.status === 201){
-                successToast('Request completed');
+                successToast('Product Added Successfully');
                 document.getElementById("save-form").reset();
                 await getList();
             }

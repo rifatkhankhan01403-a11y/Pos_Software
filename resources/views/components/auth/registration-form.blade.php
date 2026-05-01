@@ -7,26 +7,40 @@
                     <hr/>
                     <div class="container-fluid m-0 p-0">
                         <div class="row m-0 p-0">
+
+                            <div class="col-md-4 p-2">
+    <label>Shop Name</label>
+    <input id="shopName" placeholder="Shop Name" class="form-control" type="text"/>
+</div>
                             <div class="col-md-4 p-2">
                                 <label>Email Address</label>
                                 <input id="email" placeholder="User Email" class="form-control" type="email"/>
                             </div>
+                             <div class="col-md-4 p-2">
+                                <label>Password</label>
+                                <input id="password" placeholder="User Password" class="form-control" type="password"/>
+                            </div>
                             <div class="col-md-4 p-2">
-                                <label>First Name</label>
+                                <label>User Name</label>
                                 <input id="firstName" placeholder="First Name" class="form-control" type="text"/>
                             </div>
-                            <div class="col-md-4 p-2">
-                                <label>Last Name</label>
-                                <input id="lastName" placeholder="Last Name" class="form-control" type="text"/>
-                            </div>
+
                             <div class="col-md-4 p-2">
                                 <label>Mobile Number</label>
                                 <input id="mobile" placeholder="Mobile" class="form-control" type="mobile"/>
                             </div>
+
                             <div class="col-md-4 p-2">
-                                <label>Password</label>
-                                <input id="password" placeholder="User Password" class="form-control" type="password"/>
-                            </div>
+    <label>Role</label>
+    <select id="role" class="form-control">
+        <option value="">Select Role (Optional)</option>
+        <option value="owner">Owner</option>
+        <option value="manager">Manager</option>
+        <option value="employee">Employee</option>
+    </select>
+</div>
+
+
                         </div>
                         <div class="row m-0 p-0">
                             <div class="col-md-4 p-2">
@@ -47,18 +61,16 @@
 
         let email = document.getElementById('email').value;
         let firstName = document.getElementById('firstName').value;
-        let lastName = document.getElementById('lastName').value;
         let mobile = document.getElementById('mobile').value;
         let password = document.getElementById('password').value;
+        let role = document.getElementById('role').value;
+let shopName = document.getElementById('shopName').value;
 
         if(email.length===0){
             errorToast('Email is required')
         }
         else if(firstName.length===0){
             errorToast('First Name is required')
-        }
-        else if(lastName.length===0){
-            errorToast('Last Name is required')
         }
         else if(mobile.length===0){
             errorToast('Mobile is required')
@@ -71,9 +83,10 @@
             let res=await axios.post("/user-registration",{
                 email:email,
                 firstName:firstName,
-                lastName:lastName,
                 mobile:mobile,
-                password:password
+                password:password,
+                role:role,
+                shopName:shopName
             })
             hideLoader();
             if(res.status===200 && res.data['status']==='success'){

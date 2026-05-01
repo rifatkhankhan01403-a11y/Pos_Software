@@ -20,30 +20,30 @@ public function partyList(Request $request)
     $search = $request->search;
     $start  = $request->start_date;
     $end    = $request->end_date;
+    $shopId = $request->auth_shop_id;
 
     /* =========================
        CUSTOMER LIST
     ========================= */
     if ($type === 'customer') {
 
-        $query = Customer::query();
+        $customers = Customer::where('shop_id',$shopId)
+        ->select('customers.*')
+        ->addSelect([
+            'last_invoice' => InvoiceBilling::select('created_at')
+                ->whereColumn('customer_mobile', 'customers.mobile')
+                ->where('shop_id',$shopId)
+                ->latest()
+                ->limit(1)
+        ])
+        ->when($search,function($q) use ($search){
+            $q->where('mobile','like',"%$search%");
+        })
+        ->orderByDesc('last_invoice')
+        ->paginate(7);
 
-        if ($search) {
-            $query->where('mobile', 'like', "%$search%");
-        }
-
-     $customers = Customer::query()
-    ->select('customers.*')
-    ->addSelect([
-        'last_invoice' => InvoiceBilling::select('created_at')
-            ->whereColumn('customer_mobile', 'customers.mobile')
-            ->latest()
-            ->limit(1)
-    ])
-    ->orderByDesc('last_invoice')
-    ->paginate(7);
-        // balance
-        $balances = InvoiceBilling::selectRaw('
+        $balances = InvoiceBilling::where('shop_id',$shopId)
+        ->selectRaw('
             customer_mobile,
             SUM(paid) as total_paid,
             SUM(due) as total_due
@@ -81,24 +81,23 @@ public function partyList(Request $request)
     ========================= */
     if ($type === 'supplier') {
 
-        $query = Supplier::query();
+        $suppliers = Supplier::where('shop_id',$shopId)
+        ->select('suppliers.*')
+        ->addSelect([
+            'last_stock' => StockAdd::select('created_at')
+                ->whereColumn('supplier_phone', 'suppliers.mobile')
+                ->where('shop_id',$shopId)
+                ->latest()
+                ->limit(1)
+        ])
+        ->when($search,function($q) use ($search){
+            $q->where('mobile','like',"%$search%");
+        })
+        ->orderByDesc('last_stock')
+        ->paginate(7);
 
-        if ($search) {
-            $query->where('mobile', 'like', "%$search%");
-        }
-$suppliers = Supplier::query()
-    ->select('suppliers.*')
-    ->addSelect([
-        'last_stock' => StockAdd::select('created_at')
-            ->whereColumn('supplier_phone', 'suppliers.mobile')
-            ->latest()
-            ->limit(1)
-    ])
-    ->orderByDesc('last_stock')
-    ->paginate(7);
-
-
-        $balances = StockAdd::selectRaw('
+        $balances = StockAdd::where('shop_id',$shopId)
+        ->selectRaw('
             supplier_phone,
             SUM(paid_amount) as total_paid,
             SUM(due_amount) as total_due
@@ -142,15 +141,19 @@ public function partyLedger(Request $request)
 {
     $type = $request->type;
     $mobile = $request->mobile;
+    $shopId = $request->auth_shop_id;
 
     /* =========================
        CUSTOMER LEDGER
     ========================= */
     if ($type === 'customer') {
 
-        $customer = Customer::where('mobile', $mobile)->first();
+        $customer = Customer::where('mobile', $mobile)
+            ->where('shop_id',$shopId)
+            ->first();
 
         $transactions = InvoiceBilling::where('customer_mobile', $mobile)
+            ->where('shop_id',$shopId)
             ->orderBy('created_at', 'asc')
             ->get();
 
@@ -170,14 +173,13 @@ public function partyLedger(Request $request)
         });
 
         return response()->json([
-    'name' => $customer->name ?? '',
-    'mobile' => $mobile,
-    'transactions' => $data,
-
-    'total_payable' => $transactions->sum('total'),
-    'total_paid'    => $transactions->sum('paid'),
-    'total_due'     => $transactions->sum('due'),
-]);
+            'name' => $customer->name ?? '',
+            'mobile' => $mobile,
+            'transactions' => $data,
+            'total_payable' => $transactions->sum('total'),
+            'total_paid'    => $transactions->sum('paid'),
+            'total_due'     => $transactions->sum('due'),
+        ]);
     }
 
     /* =========================
@@ -185,9 +187,12 @@ public function partyLedger(Request $request)
     ========================= */
     if ($type === 'supplier') {
 
-        $supplier = Supplier::where('mobile', $mobile)->first();
+        $supplier = Supplier::where('mobile', $mobile)
+            ->where('shop_id',$shopId)
+            ->first();
 
         $transactions = StockAdd::where('supplier_phone', $mobile)
+            ->where('shop_id',$shopId)
             ->orderBy('created_at', 'asc')
             ->get();
 
@@ -199,7 +204,7 @@ public function partyLedger(Request $request)
 
             return [
                 'date'    => $t->created_at->format('d M Y, h:i A'),
-                 'payable' => $t->total_cost,
+                'payable' => $t->total_cost,
                 'paid'    => $t->paid_amount,
                 'due'     => $t->due_amount,
                 'balance' => $running
@@ -223,10 +228,17 @@ public function partyLedger(Request $request)
 /* =========================
    DASHBOARD
 ========================= */
-public function dueBookPage()
+public function dueBookPage(Request $request)
 {
-    $customer = InvoiceBilling::selectRaw('SUM(total) as total_amount, SUM(paid) as paid')->first();
-    $supplier = StockAdd::selectRaw('SUM(total_cost) as total_amount, SUM(paid_amount) as paid')->first();
+    $shopId = $request->auth_shop_id;
+
+    $customer = InvoiceBilling::where('shop_id',$shopId)
+        ->selectRaw('SUM(total) as total_amount, SUM(paid) as paid')
+        ->first();
+
+    $supplier = StockAdd::where('shop_id',$shopId)
+        ->selectRaw('SUM(total_cost) as total_amount, SUM(paid_amount) as paid')
+        ->first();
 
     $receivable = ($customer->total_amount ?? 0) - ($customer->paid ?? 0);
     $payable    = ($supplier->total_amount ?? 0) - ($supplier->paid ?? 0);
@@ -255,30 +267,30 @@ public function store(Request $request)
         $amount   = (float) $request->amount;
         $date     = $request->date;
         $note     = $request->note;
+        $shopId   = $request->auth_shop_id;
 
         /* =========================
            CUSTOMER DUE
         ========================= */
-      if ($taken_by == "Customer") {
+        if ($taken_by == "Customer") {
 
-    $customer = Customer::firstOrCreate(
-        ['mobile' => $mobile],
-        ['name' => $name]
-    );
+            $customer = Customer::firstOrCreate(
+                ['mobile' => $mobile,'shop_id'=>$shopId],
+                ['name' => $name]
+            );
 
-    InvoiceBilling::create([
-        'customer_id' => $customer->id,
-        'customer_name' => $name,
-        'customer_mobile' => $mobile,
-
-        'paid'  => $type == "Due Taken" ? $amount : 0,
-        'due'   => $type == "Due Given" ? $amount : 0,
-        'total' => $type == "Due Given" ? $amount : 0,
-
-        'invoice_date' => $date,
-        'source' => 'customer_due'
-    ]);
-}
+            InvoiceBilling::create([
+                'shop_id'=>$shopId,
+                'customer_id' => $customer->id,
+                'customer_name' => $name,
+                'customer_mobile' => $mobile,
+                'paid'  => $type == "Due Taken" ? $amount : 0,
+                'due'   => $type == "Due Given" ? $amount : 0,
+                'total' => $type == "Due Given" ? $amount : 0,
+                'invoice_date' => $date,
+                'source' => 'customer_due'
+            ]);
+        }
 
         /* =========================
            SUPPLIER DUE
@@ -286,17 +298,15 @@ public function store(Request $request)
         if ($taken_by == "Supplier") {
 
             $supplier = Supplier::firstOrCreate(
-                ['mobile' => $mobile],
+                ['mobile' => $mobile,'shop_id'=>$shopId],
                 ['name' => $name]
             );
 
             StockAdd::create([
+                'shop_id'=>$shopId,
                 'supplier_id' => $supplier->id,
                 'supplier_name' => $name,
                 'supplier_phone' => $mobile,
-
-
-
                 'paid_amount' => $type == "Due Taken" ? $amount : 0,
                 'due_amount'  => $type == "Due Given" ? $amount : 0,
                 'total_cost' => $type == "Due Given" ? $amount : 0,

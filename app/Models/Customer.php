@@ -3,13 +3,17 @@
 namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 
+use App\Traits\TracksUserShop;
+
 class Customer extends Model
 {
-    protected $fillable = ['name','email','mobile','user_id'];
+    use TracksUserShop;
 
-
-    public function invoiceBillings()
-{
-    return $this->hasMany(InvoiceBilling::class, 'customer_id');
-}
+    protected $fillable = [
+        'name',
+        'email',
+        'mobile',
+        'user_id',
+        'shop_id'
+    ];
 }

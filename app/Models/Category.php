@@ -4,10 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
+use App\Traits\TracksUserShop;
 class Category extends Model
 {
-    protected $fillable = ['name', 'user_id'];
+
+ use TracksUserShop;
+protected $fillable = ['name', 'user_id', 'user_id',
+        'shop_id'];
 
     public function subCategories()
     {

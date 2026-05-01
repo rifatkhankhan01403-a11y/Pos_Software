@@ -24,6 +24,7 @@ color:#fff;
 background:#f2f4f7;
 }
 </style>
+
 <div class="container-fluid py-2">
 
     <!-- Page Title -->
@@ -35,11 +36,27 @@ background:#f2f4f7;
 
 <div class="col-6 d-flex justify-content-end gap-2">
 
+    <!-- DOWNLOAD PDF -->
+    <a href="{{ route('cashbox.pdf', request()->all()) }}"
+       class="card border-0 shadow-sm px-3 py-2 text-decoration-none">
+
+        <div class="d-flex align-items-center gap-2">
+            <div class="icon-circle bg-danger-subtle">
+                <i class="bi bi-file-earmark-pdf text-danger"></i>
+            </div>
+
+            <div>
+                <div class="summary-title text-dark">Download PDF</div>
+            </div>
+        </div>
+    </a>
+
+
     <!-- CASH IN -->
     <div class="card border-0 shadow-sm px-3 py-2 cursor-pointer"
          data-bs-toggle="modal" data-bs-target="#cashInModal">
 
-      <div class="d-flex align-items-center gap-2">
+        <div class="d-flex align-items-center gap-2">
             <div class="icon-circle bg-success-subtle">
                 <i class="bi bi-arrow-down-circle text-success"></i>
             </div>
@@ -48,7 +65,6 @@ background:#f2f4f7;
                 <div class="summary-title">Cash In</div>
             </div>
         </div>
-
     </div>
 
 
@@ -65,7 +81,6 @@ background:#f2f4f7;
                 <div class="summary-title">Cash Out</div>
             </div>
         </div>
-
     </div>
 
 </div>

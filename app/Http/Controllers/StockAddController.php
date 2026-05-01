@@ -6,8 +6,8 @@ use App\Models\Supplier;
 use App\Models\Product;
 use App\Models\StockAdd;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\File;
 use Illuminate\View\View;
+
 class StockAddController extends Controller
 {
     // PAGE
@@ -16,69 +16,82 @@ class StockAddController extends Controller
         return view('pages.dashboard.stock-add-page');
     }
 
-    // ✅ FINAL SAVE METHOD (ONLY ONE)
- public function CreateStockPurchase(Request $request)
-{
-    $items = json_decode($request->items, true) ?? [];
-    $duePlan = json_decode($request->due_plan, true) ?? [];
 
-    $totalQty = 0;
-    $totalCost = 0;
+    // =========================
+    // CREATE STOCK PURCHASE
+    // =========================
+    public function CreateStockPurchase(Request $request)
+    {
+        $shopId = $request->auth_shop_id;
 
-    foreach ($items as $item) {
-        $qty = (float) ($item['qty'] ?? 0);
-        $buy = (float) ($item['buy_price'] ?? 0);
+        $items = json_decode($request->items, true) ?? [];
+        $duePlan = json_decode($request->due_plan, true) ?? [];
 
-        $totalQty += $qty;
-        $totalCost += $qty * $buy;
-    }
+        $totalQty = 0;
+        $totalCost = 0;
 
-    $paid = (float) $request->paid_amount;
-    $due = $totalCost - $paid;
+        foreach ($items as $item) {
 
-    // 🔥 GET SUPPLIER INFO (snapshot)
-    $supplier = Supplier::find($request->supplier_id);
+            $qty = (float) ($item['qty'] ?? 0);
+            $buy = (float) ($item['buy_price'] ?? 0);
 
-    $purchase = new StockAdd();
-
-    $purchase->invoice_no = $request->invoice_no ?? 'INV-' . time();
-    $purchase->supplier_id = $request->supplier_id;
-
-    // ✅ SAVE SNAPSHOT (IMPORTANT)
-    $purchase->supplier_name = $supplier->name ?? '';
-    $purchase->supplier_phone = $supplier->mobile ?? '';
-
-    $purchase->purchase_date = $request->purchase_date;
-$purchase->items = $items;
-$purchase->due_plan = $duePlan;
-
-    $purchase->total_qty = $totalQty;
-    $purchase->total_cost = $totalCost;
-    $purchase->paid_amount = $paid;
-    $purchase->due_amount = $due < 0 ? 0 : $due;
-    $purchase->source = 'Purchase';
-
-
-    $purchase->save();
-
-    // 🔥 UPDATE PRODUCT STOCK (MAIN FIX)
-    foreach ($items as $item) {
-
-        $product = Product::find($item['product_id']);
-
-        if ($product) {
-            $product->quantity = (float)$product->quantity + (float)$item['qty'];
-            $product->save();
+            $totalQty += $qty;
+            $totalCost += $qty * $buy;
         }
+
+        $paid = (float) $request->paid_amount;
+        $due = $totalCost - $paid;
+
+        // =========================
+        // SUPPLIER SNAPSHOT (SHOP SAFE)
+        // =========================
+        $supplier = Supplier::where('shop_id',$shopId)
+            ->where('id',$request->supplier_id)
+            ->first();
+
+        $purchase = new StockAdd();
+
+        $purchase->shop_id = $shopId;
+
+        $purchase->invoice_no = $request->invoice_no ?? 'INV-' . time();
+        $purchase->supplier_id = $request->supplier_id;
+
+        // snapshot
+        $purchase->supplier_name = $supplier->name ?? '';
+        $purchase->supplier_phone = $supplier->mobile ?? '';
+
+        $purchase->purchase_date = $request->purchase_date;
+
+        $purchase->items = $items;
+        $purchase->due_plan = $duePlan;
+
+        $purchase->total_qty = $totalQty;
+        $purchase->total_cost = $totalCost;
+        $purchase->paid_amount = $paid;
+        $purchase->due_amount = $due < 0 ? 0 : $due;
+
+        $purchase->source = 'Purchase';
+
+        $purchase->save();
+
+        // =========================
+        // STOCK UPDATE (SHOP SAFE)
+        // =========================
+        foreach ($items as $item) {
+
+            $product = Product::where('shop_id',$shopId)
+                ->where('id',$item['product_id'])
+                ->first();
+
+            if ($product) {
+                $product->quantity = (float)$product->quantity + (float)$item['qty'];
+                $product->save();
+            }
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Stock Purchase Saved Successfully'
+        ]);
     }
-
-    return response()->json([
-        'status' => 'success',
-        'message' => 'Stock Purchase Saved Successfully'
-    ]);
 }
-
-
-
-}
-

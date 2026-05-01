@@ -10,15 +10,20 @@ use Illuminate\View\View;
 class ProductController extends Controller
 {
 
+    /* =========================
+       PRODUCT PAGE
+    ========================= */
     function ProductPage(): View {
         return view('pages.dashboard.product-page');
     }
 
 
-    // ✅ CREATE PRODUCT
+    /* =========================
+       CREATE PRODUCT
+    ========================= */
     function CreateProduct(Request $request)
     {
-        $user_id = $request->header('id');
+        $shopId = $request->auth_shop_id;
 
         $img_url = null;
 
@@ -26,14 +31,14 @@ class ProductController extends Controller
             $img = $request->file('img');
             $t = time();
             $file_name = $img->getClientOriginalName();
-            $img_name = "{$user_id}-{$t}-{$file_name}";
+            $img_name = "{$t}-{$file_name}";
             $img_url = "uploads/{$img_name}";
             $img->move(public_path('uploads'), $img_name);
         }
 
         return Product::create([
+            'shop_id' => $shopId,
             'name' => $request->input('name'),
-           // 'unit' => $request->input('unit'),
             'quantity' => $request->input('quantity'),
             'buy_price' => $request->input('buy_price'),
             'sell_price' => $request->input('sell_price'),
@@ -41,24 +46,88 @@ class ProductController extends Controller
             'img_url' => $img_url,
             'category_id' => $request->input('category_id'),
             'subcategory_id' => $request->input('subcategory_id'),
-            'user_id' => $user_id
         ]);
     }
 
 
-    // ✅ DELETE PRODUCT
+    /* =========================
+       PRODUCT LIST
+    ========================= */
+    function ProductList(Request $request)
+    {
+        return Product::with('category')
+            ->where('shop_id', $request->auth_shop_id)
+            ->orderBy('id', 'desc')
+            ->get();
+    }
+
+
+    /* =========================
+       GET PRODUCT BY ID
+    ========================= */
+    function ProductByID(Request $request)
+    {
+        return Product::where('id', $request->id)
+            ->where('shop_id', $request->auth_shop_id)
+            ->first();
+    }
+
+
+    /* =========================
+       UPDATE PRODUCT
+    ========================= */
+    function UpdateProduct(Request $request)
+    {
+        $product = Product::where('id', $request->id)
+            ->where('shop_id', $request->auth_shop_id)
+            ->first();
+
+        if (!$product) {
+            return 0;
+        }
+
+        $img_url = $product->img_url;
+
+        if ($request->hasFile('img')) {
+
+            $img = $request->file('img');
+            $t = time();
+            $file_name = $img->getClientOriginalName();
+            $img_name = "{$t}-{$file_name}";
+            $img_url = "uploads/{$img_name}";
+            $img->move(public_path('uploads'), $img_name);
+
+            if ($product->img_url && File::exists(public_path($product->img_url))) {
+                File::delete(public_path($product->img_url));
+            }
+        }
+
+        return Product::where('id', $request->id)
+            ->where('shop_id', $request->auth_shop_id)
+            ->update([
+                'name' => $request->input('name'),
+                'quantity' => $request->input('quantity'),
+                'buy_price' => $request->input('buy_price'),
+                'sell_price' => $request->input('sell_price'),
+                'note' => $request->input('note'),
+                'img_url' => $img_url,
+                'category_id' => $request->input('category_id'),
+                'subcategory_id' => $request->input('subcategory_id'),
+            ]);
+    }
+
+
+    /* =========================
+       DELETE PRODUCT
+    ========================= */
     function DeleteProduct(Request $request)
     {
-        $user_id = $request->header('id');
-        $product_id = $request->input('id');
-
-        // get product first
-        $product = Product::where('id', $product_id)
-            ->where('user_id', $user_id)
+        $product = Product::where('id', $request->id)
+            ->where('shop_id', $request->auth_shop_id)
             ->first();
 
         if ($product) {
-            // delete image if exists
+
             if ($product->img_url && File::exists(public_path($product->img_url))) {
                 File::delete(public_path($product->img_url));
             }
@@ -69,74 +138,24 @@ class ProductController extends Controller
         return 0;
     }
 
+  public function searchProduct(Request $request)
+{
+    $shopId = $request->auth_shop_id;
+    $query = $request->get('keyword', '');
 
-    // ✅ GET SINGLE PRODUCT
-    function ProductByID(Request $request)
-    {
-        $user_id = $request->header('id');
-        $product_id = $request->input('id');
+    $data = Product::where('shop_id', $shopId)
+        ->where('name', 'like', "%{$query}%")
+        ->limit(10)
+        ->get()
+        ->map(function($p){
+            return [
+                'id' => $p->id,
+                'name' => $p->name,
+                'quantity' => $p->quantity,
+                'price' => $p->price ?? $p->sell_price ?? 0 // ✅ SAFE
+            ];
+        });
 
-        return Product::where('id', $product_id)
-            ->where('user_id', $user_id)
-            ->first();
-    }
-
-
-    // ✅ PRODUCT LIST
-    function ProductList(Request $request)
-    {
-        $user_id = $request->header('id');
-
-    return Product::with('category')
-    ->where('user_id', $user_id)
-    ->get();
-    }
-
-
-    // ✅ UPDATE PRODUCT
-    function UpdateProduct(Request $request)
-    {
-        $user_id = $request->header('id');
-        $product_id = $request->input('id');
-
-        $product = Product::where('id', $product_id)
-            ->where('user_id', $user_id)
-            ->first();
-
-        if (!$product) {
-            return 0;
-        }
-
-        $img_url = $product->img_url;
-
-        // if new image uploaded
-        if ($request->hasFile('img')) {
-
-            $img = $request->file('img');
-            $t = time();
-            $file_name = $img->getClientOriginalName();
-            $img_name = "{$user_id}-{$t}-{$file_name}";
-            $img_url = "uploads/{$img_name}";
-            $img->move(public_path('uploads'), $img_name);
-
-            // delete old image
-            if ($product->img_url && File::exists(public_path($product->img_url))) {
-                File::delete(public_path($product->img_url));
-            }
-        }
-
-        return Product::where('id', $product_id)
-            ->where('user_id', $user_id)
-            ->update([
-                'name' => $request->input('name'),
-               // 'unit' => $request->input('unit'),
-                'quantity' => $request->input('quantity'),
-                'buy_price' => $request->input('buy_price'),
-                'sell_price' => $request->input('sell_price'),
-                'note' => $request->input('note'),
-                'img_url' => $img_url,
-                'category_id' => $request->input('category_id'),
-                'subcategory_id' => $request->input('subcategory_id'),
-            ]);
-    }
+    return response()->json($data);
+}
 }

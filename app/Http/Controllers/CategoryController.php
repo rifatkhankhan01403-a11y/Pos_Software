@@ -16,57 +16,57 @@ class CategoryController extends Controller
     // LIST
     function CategoryList(Request $request)
     {
-        $user_id = $request->header('id');
+        $shop_id = $request->auth_shop_id;
 
-        return Category::where('user_id', $user_id)
+        return Category::where('shop_id', $shop_id)
             ->with('subCategories')
             ->get();
     }
 
     // CREATE CATEGORY + SUBCATEGORIES (ONE REQUEST)
-  function CategoryCreate(Request $request){
-    $user_id = $request->header('id');
+    function CategoryCreate(Request $request){
+        $shop_id = $request->auth_shop_id;
 
-    // 1. Create Category
-    $category = Category::create([
-        'name' => $request->input('name'),
-        'user_id' => $user_id
-    ]);
+        // 1. Create Category
+        $category = Category::create([
+            'name' => $request->input('name'),
+            'shop_id' => $shop_id
+        ]);
 
-    // 2. Get sub categories from request
-    $subCategories = $request->input('sub_categories');
+        // 2. Get sub categories from request
+        $subCategories = $request->input('sub_categories');
 
-    // 3. Insert sub categories (if exists)
-    if (!empty($subCategories)) {
-        foreach ($subCategories as $sub) {
-            SubCategory::create([
-                'name' => $sub,
-                'category_id' => $category->id,
-                'user_id' => $user_id
-            ]);
+        // 3. Insert sub categories (if exists)
+        if (!empty($subCategories)) {
+            foreach ($subCategories as $sub) {
+                SubCategory::create([
+                    'name' => $sub,
+                    'category_id' => $category->id,
+                    'shop_id' => $shop_id
+                ]);
+            }
         }
-    }
 
-    return response()->json($category, 201);
-}
+        return response()->json($category, 201);
+    }
 
     // DELETE CATEGORY
     function CategoryDelete(Request $request)
     {
-        $user_id = $request->header('id');
+        $shop_id = $request->auth_shop_id;
 
         return Category::where('id', $request->input('id'))
-            ->where('user_id', $user_id)
+            ->where('shop_id', $shop_id)
             ->delete();
     }
 
     // GET BY ID
     function CategoryByID(Request $request)
     {
-        $user_id = $request->header('id');
+        $shop_id = $request->auth_shop_id;
 
         return Category::where('id', $request->input('id'))
-            ->where('user_id', $user_id)
+            ->where('shop_id', $shop_id)
             ->with('subCategories')
             ->first();
     }
@@ -74,10 +74,10 @@ class CategoryController extends Controller
     // UPDATE CATEGORY ONLY
     function CategoryUpdate(Request $request)
     {
-        $user_id = $request->header('id');
+        $shop_id = $request->auth_shop_id;
 
         return Category::where('id', $request->input('id'))
-            ->where('user_id', $user_id)
+            ->where('shop_id', $shop_id)
             ->update([
                 'name' => $request->input('name')
             ]);

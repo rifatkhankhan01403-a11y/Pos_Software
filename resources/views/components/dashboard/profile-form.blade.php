@@ -1,103 +1,119 @@
-<div class="container">
-    <div class="row">
-        <div class="col-md-12 col-lg-12">
-            <div class="card animated fadeIn w-100 p-3">
-                <div class="card-body">
-                    <h4>User Profile</h4>
-                    <hr/>
-                    <div class="container-fluid m-0 p-0">
-                        <div class="row m-0 p-0">
-                            <div class="col-md-4 p-2">
-                                <label>Email Address</label>
-                                <input readonly id="email" placeholder="User Email" class="form-control" type="email"/>
-                            </div>
-                            <div class="col-md-4 p-2">
-                                <label>First Name</label>
-                                <input id="firstName" placeholder="First Name" class="form-control" type="text"/>
-                            </div>
-                            <div class="col-md-4 p-2">
-                                <label>Last Name</label>
-                                <input id="lastName" placeholder="Last Name" class="form-control" type="text"/>
-                            </div>
-                            <div class="col-md-4 p-2">
-                                <label>Mobile Number</label>
-                                <input id="mobile" placeholder="Mobile" class="form-control" type="mobile"/>
-                            </div>
-                            <div class="col-md-4 p-2">
-                                <label>Password</label>
-                                <input id="password" placeholder="User Password" class="form-control" type="password"/>
-                            </div>
-                        </div>
-                        <div class="row m-0 p-0">
-                            <div class="col-md-4 p-2">
-                                <button onclick="onUpdate()" class="btn mt-3 w-100  bg-gradient-primary">Update</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+<div class="container-fluid">
+
+<div class="card shadow-sm p-4">
+
+<!-- HEADER -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">Profile Settings</h4>
 </div>
 
+<hr>
+
+<!-- SHOP INFO -->
+<div class="row">
+
+<div class="col-md-4 p-2">
+    <label>Shop Name</label>
+    <input  id="shopName" class="form-control">
+</div>
+
+<div class="col-md-4 p-2">
+    <label>Shop ID</label>
+    <input readonly id="shopId" class="form-control">
+</div>
+
+<div class="col-md-4 p-2">
+    <label>Customer Name</label>
+    <input id="firstName" class="form-control">
+</div>
+
+<div class="col-md-4 p-2">
+    <label>Email</label>
+    <input id="email" class="form-control" readonly>
+</div>
+
+<div class="col-md-4 p-2">
+    <label>Mobile</label>
+    <input id="mobile" class="form-control">
+</div>
+
+<div class="col-md-4 p-2">
+    <label>Password</label>
+    <input id="password" type="password" class="form-control" placeholder="New password (optional)">
+</div>
+
+</div>
+
+<!-- BUTTON -->
+<div class="mt-3">
+    <button onclick="onUpdate()" class="btn btn-primary w-25">
+        Update Profile
+    </button>
+</div>
+
+</div>
+</div>
+
+
 <script>
-    getProfile();
-    async function getProfile(){
-        showLoader();
-        let res=await axios.get("/user-profile")
-        hideLoader();
-        if(res.status===200 && res.data['status']==='success'){
-            let data=res.data['data'];
-            document.getElementById('email').value=data['email'];
-            document.getElementById('firstName').value=data['firstName'];
-            document.getElementById('lastName').value=data['lastName'];
-            document.getElementById('mobile').value=data['mobile'];
-            document.getElementById('password').value=data['password'];
-        }
-        else{
-            errorToast(res.data['message'])
-        }
+getProfile();
 
+async function getProfile(){
+    showLoader();
+
+    let res = await axios.get("/user-profile");
+
+    hideLoader();
+
+    if(res.status === 200 && res.data.status === 'success'){
+
+        let data = res.data.data;
+
+        document.getElementById('email').value = data.email ?? '';
+        document.getElementById('firstName').value = data.firstName ?? '';
+        document.getElementById('mobile').value = data.mobile ?? '';
+
+        document.getElementById('shopName').value = data.shop_name ?? '';
+        document.getElementById('shopId').value = data.shop_id ?? '';
+
+    } else {
+        errorToast(res.data.message);
+    }
+}
+
+
+/* UPDATE PROFILE */
+async function onUpdate(){
+
+    let firstName = document.getElementById('firstName').value;
+    let mobile = document.getElementById('mobile').value;
+    let shopName = document.getElementById('shopName').value;
+    let password = document.getElementById('password').value;
+
+    if(firstName.length === 0){
+        return errorToast("Name required");
     }
 
-    async function onUpdate() {
-
-
-        let firstName = document.getElementById('firstName').value;
-        let lastName = document.getElementById('lastName').value;
-        let mobile = document.getElementById('mobile').value;
-        let password = document.getElementById('password').value;
-
-        if(firstName.length===0){
-            errorToast('First Name is required')
-        }
-        else if(lastName.length===0){
-            errorToast('Last Name is required')
-        }
-        else if(mobile.length===0){
-            errorToast('Mobile is required')
-        }
-        else if(password.length===0){
-            errorToast('Password is required')
-        }
-        else{
-            showLoader();
-            let res=await axios.post("/user-update",{
-                firstName:firstName,
-                lastName:lastName,
-                mobile:mobile,
-                password:password
-            })
-            hideLoader();
-            if(res.status===200 && res.data['status']==='success'){
-                successToast(res.data['message']);
-                await getProfile();
-            }
-            else{
-                errorToast(res.data['message'])
-            }
-        }
+    if(mobile.length === 0){
+        return errorToast("Mobile required");
     }
 
+    if(shopName.length === 0){
+        return errorToast("Shop Name required");
+    }
+
+    let res = await axios.post("/user-update", {
+        firstName: firstName,
+        mobile: mobile,
+        shopName: shopName,
+        password: password
+    });
+
+    if(res.status === 200 && res.data.status === 'success'){
+        successToast(res.data.message);
+        getProfile();
+    } else {
+        errorToast(res.data.message);
+    }
+}
 </script>
-
