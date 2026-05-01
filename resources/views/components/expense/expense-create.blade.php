@@ -69,58 +69,90 @@ Save
 
 
 <script>
+// ==============================
+// SAFE LOCAL DATE FUNCTION
+// ==============================
+function getLocalDate() {
+    let d = new Date();
 
-document.getElementById('expenseDate').valueAsDate=new Date();
+    let year = d.getFullYear();
+    let month = String(d.getMonth() + 1).padStart(2, '0');
+    let day = String(d.getDate()).padStart(2, '0');
 
-
-async function SaveExpense(){
-
-let date=document.getElementById('expenseDate').value
-let category=document.getElementById('expenseCategory').value
-let amount=document.getElementById('expenseAmount').value
-let note=document.getElementById('expenseNote').value
-
-
-if(date.length===0){
-errorToast("Date Required")
-}
-else if(category.length===0){
-errorToast("Category Required")
-}
-else if(amount.length===0 || amount<=0){
-errorToast("Valid Amount Required")
+    return `${year}-${month}-${day}`;
 }
 
-else{
 
-document.getElementById('expense-modal-close').click()
+// ==============================
+// SET DEFAULT DATE ON OPEN
+// ==============================
+document.addEventListener("DOMContentLoaded", function () {
+    document.getElementById('expenseDate').value = getLocalDate();
+});
 
-showLoader()
 
-let res=await axios.post("/create-expense",{
-date:date,
-category:category,
-amount:amount,
-note:note
-})
+// ==============================
+// SAVE EXPENSE
+// ==============================
+async function SaveExpense() {
 
-hideLoader()
+    let date = document.getElementById('expenseDate').value;
+    let category = document.getElementById('expenseCategory').value;
+    let amount = document.getElementById('expenseAmount').value;
+    let note = document.getElementById('expenseNote').value;
 
-if(res.status===201){
+    // ================= VALIDATION =================
+    if (!date) {
+        errorToast("Date Required");
+        return;
+    }
 
-successToast("Request completed")
+    if (!category) {
+        errorToast("Category Required");
+        return;
+    }
 
-document.getElementById("expense-save-form").reset()
-document.getElementById('expenseDate').valueAsDate=new Date();
-await getExpenseList()
+    if (!amount || amount <= 0) {
+        errorToast("Valid Amount Required");
+        return;
+    }
 
-}
-else{
-errorToast("Request fail")
-}
+    // ================= REQUEST =================
+    document.getElementById('expense-modal-close').click();
+    showLoader();
 
-}
+    try {
 
+        let res = await axios.post("/create-expense", {
+            date: date,
+            category: category,
+            amount: amount,
+            note: note
+        });
+
+        hideLoader();
+
+        if (res.status === 201) {
+
+            successToast("Expense Created Successfully");
+
+            // reset form
+            document.getElementById("expense-save-form").reset();
+
+            // reset date correctly
+            document.getElementById('expenseDate').value = getLocalDate();
+
+            await getExpenseList();
+
+        } else {
+            errorToast("Request failed");
+        }
+
+    } catch (error) {
+        hideLoader();
+        errorToast("Server Error");
+        console.log(error);
+    }
 }
 
 </script>

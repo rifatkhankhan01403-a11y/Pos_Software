@@ -95,9 +95,10 @@
     <thead>
         <tr>
             <th>SL</th>
+              <th>Date</th>
             <th>Category</th>
             <th>Amount</th>
-            <th>Date</th>
+
             <th>Note</th>
         </tr>
     </thead>
@@ -106,9 +107,10 @@
         @foreach($expenses as $index => $e)
         <tr>
             <td>{{ $index + 1 }}</td>
+             <td>{{ $e->formatted_created_at }}</td>
             <td>{{ $e->category }}</td>
             <td>৳ {{ number_format($e->amount) }}</td>
-            <td>{{ $e->date }}</td>
+
             <td>{{ $e->note }}</td>
         </tr>
         @endforeach

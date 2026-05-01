@@ -6,6 +6,7 @@ use App\Models\Expense;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\User;
+use Carbon\Carbon;
 class ExpenseController extends Controller
 {
 
@@ -26,18 +27,27 @@ class ExpenseController extends Controller
 
     $query = Expense::where('shop_id', $shopId);
 
-    // ================= ONLY APPLY FILTER IF DATE EXISTS =================
     if ($request->start_date && $request->end_date) {
-
         $query->whereBetween('date', [
             $request->start_date,
             $request->end_date
         ]);
     }
 
-    return $query->orderBy('id', 'desc')->get();
-}
+    return $query->orderBy('id', 'desc')->get()->map(function ($item) {
 
+        return [
+            'id' => $item->id,
+            'category' => $item->category,
+            'amount' => $item->amount,
+            'note' => $item->note,
+
+            // ✅ formatted created_at
+            'created_at' => Carbon::parse($item->created_at)
+                ->format('d M Y, h:i A'),
+        ];
+    });
+}
 
     /* =========================
        CREATE EXPENSE
@@ -51,7 +61,8 @@ class ExpenseController extends Controller
             'date' => $request->date,
             'category' => $request->category,
             'amount' => $request->amount,
-            'note' => $request->note
+            'note' => $request->note,
+
         ]);
 
         return response()->json($data,201);
@@ -115,7 +126,6 @@ public function downloadExpensePdf(Request $request)
     $startDate = $request->start_date;
     $endDate = $request->end_date;
 
-    // SHOP INFO
     $shop = User::where('shop_id', $shopId)
         ->where('role', 'owner')
         ->first();
@@ -126,9 +136,15 @@ public function downloadExpensePdf(Request $request)
         $query->whereBetween('date', [$startDate, $endDate]);
     }
 
-    $expenses = $query->orderBy('date', 'desc')->get();
+    $expenses = $query->orderBy('created_at', 'desc')->get();
 
-    // SUMMARY
+    // ✅ FORMAT created_at HERE
+    $expenses->transform(function ($item) {
+        $item->formatted_created_at = \Carbon\Carbon::parse($item->created_at)
+            ->format('d M Y, h:i A');
+        return $item;
+    });
+
     $total = $expenses->sum('amount');
 
     $pdf = Pdf::loadView('pdf.expense', [
@@ -141,5 +157,4 @@ public function downloadExpensePdf(Request $request)
 
     return $pdf->download('expense-report.pdf');
 }
-
 }
