@@ -44,7 +44,7 @@ class UserController extends Controller
 
             'email' => $request->input('email'),
             'mobile' => $request->input('mobile'),
-            'password' => bcrypt($request->input('password')),
+            'password' => $request->input('password'),
 
             'shop_name' => $request->input('shopName'),
             'role' => $request->input('role'),
