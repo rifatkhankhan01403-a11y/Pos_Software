@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\InvoiceBilling;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
-
+use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\User;
 
 class SaleHistoryController extends Controller
 {
@@ -135,9 +135,9 @@ public function downloadPdf(Request $request)
         'totalQty' => $totalQty,
         'startDate' => $request->start_date,
         'endDate' => $request->end_date
-    ]);
+    ])->setPaper('a4');
 
-    return $pdf->download('sales-report.pdf');
+   return $pdf->download('sales-report.pdf');
 }
 
 }
