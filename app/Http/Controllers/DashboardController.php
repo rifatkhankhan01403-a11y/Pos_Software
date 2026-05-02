@@ -138,7 +138,17 @@ class DashboardController extends Controller
 
         $expense = Expense::where('shop_id', $shopId)->sum('amount');
 
-        $net = ($receivable - $payable) - $expense;
+
+        // net balance calculation in dashboard
+
+     $cashIn = InvoiceBilling::where('shop_id', $shopId)->sum('paid');
+
+$cashOut = StockAdd::where('shop_id', $shopId)->sum('paid_amount')
+           + Expense::where('shop_id', $shopId)->sum('amount');
+
+$cash = $cashIn - $cashOut;
+
+$net = $cash + $receivable - $payable;
 
 
         return response()->json([
