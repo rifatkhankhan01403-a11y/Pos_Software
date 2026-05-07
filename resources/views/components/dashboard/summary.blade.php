@@ -141,64 +141,52 @@ margin-bottom:10px;
 
 <!-- TOP CARDS -->
 
+<!-- TOP CARDS -->
 <div class="row g-3 mb-4">
 
-<div class="col-lg-4">
+    <!-- SELL -->
+    <div class="col-lg-3">
+        <div class="dashboard-card" onclick="goTo('/salePage')">
+            <div>
+                <div class="card-title" id="sellTitle">Today Sale</div>
+                <div class="card-value text-success" id="sellAmount">৳ 0</div>
+            </div>
+            <div class="icon-box">📈</div>
+        </div>
+    </div>
 
-<div class="dashboard-card" onclick="goTo('/salePage')">
-<div>
+    <!-- CONDITION SELL -->
+    <div class="col-lg-3">
+        <div class="dashboard-card" onclick="goTo('/salePage')">
+            <div>
+                <div class="card-title" id="conditionTitle">Today Condition Sale</div>
+                <div class="card-value text-warning" id="conditionAmount">৳ 0</div>
+            </div>
+            <div class="icon-box">🚚</div>
+        </div>
+    </div>
 
-<div class="card-title" id="sellTitle">Today Sell</div>
+    <!-- PURCHASE -->
+    <div class="col-lg-3">
+        <div class="dashboard-card" onclick="goTo('/purchase-book')">
+            <div>
+                <div class="card-title" id="purchaseTitle">Today Purchase</div>
+                <div class="card-value text-primary" id="purchaseAmount">৳ 0</div>
+            </div>
+            <div class="icon-box">🛒</div>
+        </div>
+    </div>
 
-<div class="card-value text-success" id="sellAmount">৳ 0</div>
-
-</div>
-
-<div class="icon-box">📈</div>
-
-</div>
-
-</div>
-
-
-
-<div class="col-lg-4">
-
-<div class="dashboard-card" onclick="goTo('/purchase-book')">
-
-<div>
-
-<div class="card-title" id="purchaseTitle">Today Purchase</div>
-
-<div class="card-value text-primary" id="purchaseAmount">৳ 0</div>
-
-</div>
-
-<div class="icon-box">🛒</div>
-
-</div>
-
-</div>
-
-
-
-<div class="col-lg-4">
-
-<div class="dashboard-card "  onclick="goTo('/expensePage')">
-
-<div>
-
-<div class="card-title" id="expenseTitle">Today Expense</div>
-
-<div class="card-value text-danger" id="expenseAmount">৳ 0</div>
-
-</div>
-
-<div class="icon-box">💸</div>
-
-</div>
-
-</div>
+    <!-- EXPENSE -->
+    <div class="col-lg-3">
+        <div class="dashboard-card" onclick="goTo('/expensePage')">
+            <div>
+                <div class="card-title" id="expenseTitle">Today Expense</div>
+                <div class="card-value text-danger" id="expenseAmount">৳ 0</div>
+            </div>
+            <div class="icon-box">💸</div>
+        </div>
+    </div>
 
 </div>
 
@@ -206,67 +194,54 @@ margin-bottom:10px;
 
 <!-- SECOND ROW -->
 
+<!-- SECOND ROW -->
 <div class="row g-3 mb-4">
 
-<div class="col-lg-4">
+    <!-- TOTAL STOCK -->
+    <div class="col-lg-3">
+        <div class="dashboard-card" onclick="goTo('/productPage')">
+            <div>
+                <div class="card-title">Total Stock</div>
+                <div class="card-value text-success" id="stockValue">0</div>
+            </div>
+            <div class="icon-box">📦</div>
+        </div>
+    </div>
 
-<div class="dashboard-card "  onclick="goTo('/productPage')">
+    <!-- STOCK SOLD -->
+    <div class="col-lg-3">
+        <div class="dashboard-card" onclick="goTo('/salePage')">
+            <div>
+                <div class="card-title" id="stockSellTitle">Today Stock Sold</div>
+                <div class="card-value text-info" id="stockSellValue">0</div>
+            </div>
+            <div class="icon-box">📤</div>
+        </div>
+    </div>
 
-<div>
+    <!-- RECEIVABLE -->
+    <div class="col-lg-3">
+        <div class="dashboard-card" onclick="goTo('/due-book')">
+            <div>
+                <div class="card-title">Receivable</div>
+                <div class="card-value text-danger" id="receivableValue">৳ 0</div>
+            </div>
+            <div class="icon-box">💳</div>
+        </div>
+    </div>
 
-<div class="card-title">Total Stock</div>
-<div class="card-value text-success" id="stockValue">0</div>
-
-</div>
-
-<div class="icon-box">📦</div>
-
-</div>
-
-</div>
-
-
-
-<div class="col-lg-4">
-
-<div class="dashboard-card" onclick="goTo('/due-book')">
-
-<div>
-
-<div class="card-title">Receivable</div>
-
-<div class="card-value text-danger" id="receivableValue">৳ 0</div>
-
-</div>
-
-<div class="icon-box">💳</div>
-
-</div>
-
-</div>
-
-
-
-<div class="col-lg-4">
-
-<div class="dashboard-card" onclick="goTo('/due-book')">
-
-<div>
-
-<div class="card-title">Payable</div>
-
-<div class="card-value text-success" id="payableValue">৳ 0</div>
+    <!-- PAYABLE -->
+    <div class="col-lg-3">
+        <div class="dashboard-card" onclick="goTo('/due-book')">
+            <div>
+                <div class="card-title">Payable</div>
+                <div class="card-value text-success" id="payableValue">৳ 0</div>
+            </div>
+            <div class="icon-box">🧾</div>
+        </div>
+    </div>
 
 </div>
-
-<div class="icon-box">🧾</div>
-
-</div>
-
-</div>
-
-</div>
-
 
 
 <!-- ACTION CARDS -->
@@ -357,15 +332,45 @@ fetch('/dashboard-data?filter='+filter)
 
 .then(data=>{
 
-document.getElementById("sellAmount").innerText="৳ "+data.sell
-document.getElementById("purchaseAmount").innerText="৳ "+data.purchase
-document.getElementById("expenseAmount").innerText="৳ "+data.expense
+document.getElementById("sellAmount").innerText =
+        "৳ " + data.sell;
 
-let title=filter.charAt(0).toUpperCase()+filter.slice(1)
+    document.getElementById("purchaseAmount").innerText =
+        "৳ " + data.purchase;
 
-document.getElementById("sellTitle").innerText=title+" Sell"
-document.getElementById("purchaseTitle").innerText=title+" Purchase"
-document.getElementById("expenseTitle").innerText=title+" Expense"
+    document.getElementById("expenseAmount").innerText =
+        "৳ " + data.expense;
+
+    document.getElementById("conditionAmount").innerText =
+        "৳ " + data.condition_sell;
+
+    document.getElementById("stockSellValue").innerText =
+        data.stock_sold_qty;
+
+    let labels = {
+    today: "Today's",
+    weekly: "Weekly",
+    monthly: "Monthly",
+    yearly: "Yearly",
+    all: "All Time"
+};
+
+let title = labels[filter];
+
+document.getElementById("sellTitle").innerText =
+        title + " Sale";
+
+document.getElementById("purchaseTitle").innerText =
+        title + " Purchase";
+
+document.getElementById("expenseTitle").innerText =
+        title + " Expense";
+
+document.getElementById("conditionTitle").innerText =
+        title + " Condition Sale";
+
+document.getElementById("stockSellTitle").innerText =
+        title + " Stock Sold";
 
 })
 

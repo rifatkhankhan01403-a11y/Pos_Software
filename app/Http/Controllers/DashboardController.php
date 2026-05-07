@@ -57,7 +57,7 @@ class DashboardController extends Controller
             ->whereIn('source', ['Sell', 'Quick Sell']);
 
         if ($start && $end) {
-            $sellQuery->whereBetween('invoice_date', [$start, $end]);
+            $sellQuery->whereBetween('created_at', [$start, $end]);
         }
 
         $sell = $sellQuery->sum('total');
@@ -87,11 +87,50 @@ class DashboardController extends Controller
 
         $expense = $expenseQuery->sum('amount');
 
-        return response()->json([
-            'sell' => $sell,
-            'purchase' => $purchase,
-            'expense' => $expense
-        ]);
+
+        /* CONDITION SELL TOTAL */
+$conditionQuery = InvoiceBilling::where('shop_id', $shopId)
+    ->where('source', 'Condition Sales');
+
+if ($start && $end) {
+    $conditionQuery->whereBetween('created_at', [$start, $end]);
+}
+
+$conditionSell = $conditionQuery->sum('total');
+
+
+/* STOCK SOLD QTY */
+$stockSellQuery = InvoiceBilling::where('shop_id', $shopId)
+    ->whereIn('source', ['Sell', 'Condition Sales']);
+
+if ($start && $end) {
+    $stockSellQuery->whereBetween('created_at', [$start, $end]);
+}
+
+$stockInvoices = $stockSellQuery->get();
+
+$stockSoldQty = 0;
+
+foreach ($stockInvoices as $invoice) {
+
+    if (!empty($invoice->items)) {
+
+        foreach ($invoice->items as $item) {
+
+            $stockSoldQty += (float) ($item['qty'] ?? 0);
+
+        }
+    }
+}
+
+
+    return response()->json([
+    'sell' => round($sell,2),
+    'purchase' => round($purchase,2),
+    'expense' => round($expense,2),
+    'condition_sell' => round($conditionSell,2),
+    'stock_sold_qty' => round($stockSoldQty,2)
+]);
     }
 
     public function getDashboardSummary(Request $request)

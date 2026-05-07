@@ -203,16 +203,16 @@
 
     <a href="{{url('/salePage')}}" class="side-bar-item">
         <i class="bi bi-cart-check"></i>
-        <span class="side-bar-item-caption">Add Sell</span>
+        <span class="side-bar-item-caption">Add Sale</span>
     </a>
 
     <a href="#" class="side-bar-item" data-bs-toggle="modal" data-bs-target="#quickSellModal">
         <i class="bi bi-lightning-charge"></i>
-        <span class="side-bar-item-caption">Quick Sell</span>
+        <span class="side-bar-item-caption">Quick Sale</span>
     </a>
   <a href="{{url('/conditionSell')}}" class="side-bar-item">
         <i class="bi bi-cart-check"></i>
-        <span class="side-bar-item-caption">Condition Sell</span>
+        <span class="side-bar-item-caption">Condition Sale</span>
     </a>
 
 
@@ -509,11 +509,19 @@ cashOutBtn.addEventListener('click', function () {
 
 document.addEventListener("DOMContentLoaded", function () {
 
-    let currentUrl = window.location.href;
+    let currentPath = window.location.pathname;
+
+    document.querySelectorAll('.side-bar-item').forEach(l => l.classList.remove('active'));
 
     document.querySelectorAll('.side-bar-item').forEach(link => {
 
-        if (link.href === currentUrl) {
+        if (!link.href || link.getAttribute('href') === '#' || link.hasAttribute('data-bs-toggle')) {
+            return;
+        }
+
+        let linkPath = new URL(link.href).pathname;
+
+        if (linkPath === currentPath) {
             link.classList.add('active');
         }
 
