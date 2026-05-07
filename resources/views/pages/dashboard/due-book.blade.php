@@ -857,7 +857,7 @@ document.getElementById("totalDue").innerText = due;
         if (!mobile) return errorToast("Mobile is required !");
         if (isNaN(amount)) return errorToast("Amount must be a number !");
 
-        let res = await fetch("{{ route('due.store') }}", {
+        let res = await fetch("/due-store", {
             method: "POST",
             headers: {
                 'X-CSRF-TOKEN': "{{ csrf_token() }}"
@@ -906,7 +906,7 @@ document.getElementById("totalDue").innerText = due;
         if (!mobile) return errorToast("Mobile is required !");
         if (isNaN(amount)) return errorToast("Amount must be a number !");
 
-        let res = await fetch("{{ route('due.store') }}", {
+        let res = await fetch("/due-store", {
             method: "POST",
             headers: {
                 'X-CSRF-TOKEN': "{{ csrf_token() }}"
@@ -950,7 +950,7 @@ document.getElementById("totalDue").innerText = due;
         let formData = new FormData(form);
         formData.set("type", "Due Taken");
 
-        let res = await fetch("{{ route('due.store') }}", {
+        let res = await fetch("/due-store",  {
             method: "POST",
             headers: {
                 'X-CSRF-TOKEN': "{{ csrf_token() }}"
