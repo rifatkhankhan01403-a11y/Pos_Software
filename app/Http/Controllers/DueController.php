@@ -234,19 +234,27 @@ public function dueBookPage(Request $request)
 {
     $shopId = $request->auth_shop_id;
 
-    // Customer Receivable (Only Sell invoices)
+    // =========================
+    // CUSTOMER (RECEIVABLE)
+    // Sell + Customer Due Sales
+    // =========================
     $customer = InvoiceBilling::where('shop_id', $shopId)
-        ->where('source', 'Sell')
+        ->whereIn('source', ['Sell', 'customer_due'])
         ->selectRaw('SUM(total) as total_amount, SUM(paid) as paid')
         ->first();
 
-    // Supplier Payable (Only Purchase stock adds)
+    // =========================
+    // SUPPLIER (PAYABLE)
+    // Purchase + Supplier Due Purchases
+    // =========================
     $supplier = StockAdd::where('shop_id', $shopId)
-        ->where('source', 'Purchase')
+        ->whereIn('source', ['Purchase', 'supplier_due'])
         ->selectRaw('SUM(total_cost) as total_amount, SUM(paid_amount) as paid')
         ->first();
 
-    // Calculations
+    // =========================
+    // CALCULATIONS
+    // =========================
     $receivable = ($customer->total_amount ?? 0) - ($customer->paid ?? 0);
 
     $payable = ($supplier->total_amount ?? 0) - ($supplier->paid ?? 0);
