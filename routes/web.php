@@ -161,7 +161,7 @@ Route::post('/quick-sell-store', [InvoiceBillingController::class, 'QuickSellSto
 Route::post('/cash-in', [CashboxController::class, 'cashIn'])->middleware([TokenVerificationMiddleware::class]);
 Route::post('/cash-out', [CashboxController::class, 'cashOut'])->middleware([TokenVerificationMiddleware::class]);
 Route::get('/cashbox/pdf', [CashboxController::class, 'downloadPdf'])->name('cashbox.pdf')->middleware([TokenVerificationMiddleware::class]);
-
+Route::post('/cashbox-delete',[CashboxController::class,'deleteTransaction'])->middleware([TokenVerificationMiddleware::class]);
 
 
 // SUMMARY & Report

@@ -11,7 +11,7 @@
                             <div class="col-12 p-1">
                                 <label class="form-label">Customer Name *</label>
                                 <input type="text" class="form-control" id="customerName">
-                                <label class="form-label">Customer Email *</label>
+                                <label class="form-label">Customer Email</label>
                                 <input type="text" class="form-control" id="customerEmail">
                                 <label class="form-label">Customer Mobile *</label>
                                 <input type="text" class="form-control" id="customerMobile">

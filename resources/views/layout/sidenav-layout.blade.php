@@ -293,6 +293,9 @@
     @yield('content')
 </div>
 
+
+
+
 <!-- Quick Sale Global Modal -->
 <!-- QUICK SELL MODAL -->
 <div class="modal fade quick-modal" id="quickSellModal" tabindex="-1">
@@ -305,7 +308,7 @@
 
     <!-- custom cross close -->
     <span class="quick-close" data-bs-dismiss="modal">
-        <i class="bi bi-x-lg"></i>
+        <i class="bi bi-x-sm"></i>
     </span>
 </div>
 
@@ -324,8 +327,50 @@
     <input type="text" class="form-control form-control-lg" value="Cash" readonly>
 </div>
 
+
+
+
+<!-- PRODUCT -->
+<div class="col-md-6">
+    <label class="form-label fw-semibold">Product</label>
+
+    <div class="input-group input-group-sm">
+
+        <select id="qs_product_id" class="form-select">
+            <option value="">Select Product</option>
+        </select>
+
+        <!-- ADD PRODUCT BUTTON -->
+ {{-- <button class="btn btn-primary"
+        type="button"
+        data-bs-toggle="modal"
+        data-bs-target="#create-modal">
+            <i class="bi bi-plus-lg"></i>
+        </button> --}}
+
+    </div>
+</div>
+
+<!-- CURRENT STOCK -->
+
+<!-- QTY -->
+<div class="col-md-6">
+    <label class="form-label fw-semibold">Qty</label>
+
+    <input type="number"
+           id="qs_qty"
+           class="form-control form-control-sm"
+           min="1"
+           value="0">
+</div>
+
+
+
+
+
+
           <div class="col-md-6">
-            <label class="form-label fw-semibold">Amount</label>
+            <label class="form-label fw-semibold">Amount*</label>
            <input id="qs_amount" type="text" class="form-control form-control-lg" placeholder="Enter Amount">
 
           </div>
@@ -361,7 +406,169 @@
     </div>
   </div>
 </div>
+
+
+{{--
+create porduct modal
+--}}
+
+<div class="modal animated zoomIn" id="create-modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create Product</h5>
+            </div>
+
+            <div class="modal-body">
+                <form id="save-form">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-12 p-1">
+
+                                <!-- Category -->
+                                <label class="form-label">Category</label>
+                                <select class="form-control form-select" id="productCategory">
+                                    <option value="">Select Category</option>
+                                </select>
+
+                                <!-- Subcategory -->
+                                {{-- <label class="form-label mt-2">Sub Category</label>
+                                <select class="form-control form-select" id="productSubCategory">
+                                    <option value="">Select Sub Category</option>
+                                </select> --}}
+
+                                <!-- Name -->
+                                <label class="form-label mt-2">Name</label>
+                                <input type="text" class="form-control" id="productName">
+
+                                {{-- <!-- Unit -->
+                                <label class="form-label mt-2">Unit</label>
+                                <input type="text" class="form-control" id="productUnit"> --}}
+
+                                <!-- Quantity -->
+                                <label class="form-label mt-2">Quantity</label>
+                                <input type="number" class="form-control" id="productQuantity">
+
+                                <!-- Buy Price -->
+                                <label class="form-label mt-2">Buy Price</label>
+                                <input type="text" class="form-control" id="productBuyPrice">
+
+                                <!-- Sell Price -->
+                                <label class="form-label mt-2">Sell Price</label>
+                                <input type="text" class="form-control" id="productSellPrice">
+
+                                <!-- Note -->
+                                <label class="form-label mt-2">Note</label>
+                                <input type="text" class="form-control" id="productNote">
+
+                                <br/>
+
+                                <!-- Image Preview -->
+                                <img class="w-15" id="newImg" src="{{asset('images/default.jpg')}}"/>
+                                <br/>
+
+                                <!-- Image -->
+                                <label class="form-label">Image</label>
+                                <input oninput="newImg.src=window.URL.createObjectURL(this.files[0])"
+                                       type="file"
+                                       class="form-control"
+                                       id="productImg">
+
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button id="modal-close" class="btn bg-gradient-primary mx-2" data-bs-dismiss="modal">Close</button>
+                <button onclick="Save()" class="btn bg-gradient-success">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
+async function Save() {
+
+        let productCategory = document.getElementById('productCategory').value;
+        let productSubCategory = document.getElementById('productSubCategory').value;
+        let productName = document.getElementById('productName').value;
+      //  let productUnit = document.getElementById('productUnit').value;
+        let productQuantity = document.getElementById('productQuantity').value;
+        let productBuyPrice = document.getElementById('productBuyPrice').value;
+        let productSellPrice = document.getElementById('productSellPrice').value;
+        let productNote = document.getElementById('productNote').value;
+        let productImg = document.getElementById('productImg').files[0]; // ✅ FIXED
+
+
+        if (productCategory.length === 0) {
+            errorToast("Product Category Required !");
+        }
+        else if(productName.length === 0){
+            errorToast("Product Name Required !");
+        }
+        // else if(productUnit.length === 0){
+        //     errorToast("Product Unit Required !");
+        // }
+        // else if(productQuantity.length === 0){
+        //     errorToast("Quantity Required !");
+        // }
+        else if(productBuyPrice.length === 0){
+            errorToast("Buy Price Required !");
+        }
+
+        else {
+
+            document.getElementById('modal-close').click();
+
+            let formData = new FormData();
+
+            if(productImg){
+                formData.append('img', productImg)
+            }
+
+            formData.append('name', productName)
+            formData.append('quantity', productQuantity)
+            formData.append('buy_price', productBuyPrice)
+            formData.append('sell_price', productSellPrice)
+            formData.append('note', productNote)
+            formData.append('category_id', productCategory)
+            formData.append('subcategory_id', productSubCategory)
+
+            const config = {
+                headers: {
+                    'content-type': 'multipart/form-data'
+                }
+            }
+
+            showLoader();
+            let res = await axios.post("/create-product", formData, config)
+            hideLoader();
+
+            if(res.status === 201){
+                successToast('Product Added Successfully');
+                document.getElementById("save-form").reset();
+               await loadQuickSellProducts();
+            }
+            else{
+                errorToast("Request fail !");
+            }
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 function MenuBarClickHandler() {
     let sideNav = document.getElementById('sideNavRef');
@@ -379,74 +586,105 @@ function MenuBarClickHandler() {
         content.classList.add("content");
     }
 }
-
 document.addEventListener("DOMContentLoaded", function () {
-    let today = new Date().toISOString().split('T')[0];
-    document.getElementById("sellDate").value = today;
-});
 
+    let today = new Date().toISOString().split('T')[0];
+
+    document.getElementById("sellDate").value = today;
+
+    loadQuickSellProducts();
+
+});
 
 function submitQuickSell() {
 
-    let amount = parseFloat(document.getElementById('qs_amount').value);
+    let productId =
+        document.getElementById('qs_product_id').value;
 
-    // 🔴 Validation
-    if (!amount || amount <= 0) {
+    let qty =
+        parseFloat(document.getElementById('qs_qty').value);
 
-        Toastify({
-            text: "Amount must be greater than 0",
-            duration: 3000,
-            gravity: "top",
+let amount =
+    parseFloat(document.getElementById('qs_amount').value);
 
-            position: "center",
-            backgroundColor: "red",
-        }).showToast();
+// VALIDATE QTY AFTER PRODUCT SELECT
+if (productId && qty < 1) {
 
-        document.getElementById('qs_amount').focus();
-        return;
-    }
+    Toastify({
+        text: "Quantity must be at least 1",
+        duration: 3000,
+        backgroundColor: "red"
+    }).showToast();
 
+    return;
+}
     let data = {
-        sell_date: document.getElementById('sellDate').value,
-        amount: amount,
-        profit: document.getElementById('qs_profit').value,
-        customer_name: document.getElementById('qs_name').value,
-        customer_mobile: document.getElementById('qs_mobile').value,
+
+        sell_date:
+            document.getElementById('sellDate').value,
+
+        product_id: productId,
+
+        qty: qty,
+ amount: amount,
+        customer_name:
+            document.getElementById('qs_name').value,
+
+        customer_mobile:
+            document.getElementById('qs_mobile').value,
     };
 
     axios.post('/quick-sell-store', data)
-        .then(function (response) {
 
-            if (response.data.status === true) {
+    .then(function (response) {
 
-                Toastify({
-                    text: "Quick Sell Saved Successfully",
-                    duration: 3000,
-                 gravity: "top",
-position: "center",
-                    backgroundColor: "green",
-                }).showToast();
-
-                let modal = bootstrap.Modal.getInstance(document.getElementById('quickSellModal'));
-                modal.hide();
-
-                document.getElementById('qs_amount').value = '';
-                document.getElementById('qs_profit').value = '';
-                document.getElementById('qs_name').value = '';
-                document.getElementById('qs_mobile').value = '';
-            }
-
-        })
-        .catch(function (error) {
+        if (response.data.status === true) {
 
             Toastify({
-                text: "Something went wrong",
+                text: "Quick Sell Saved Successfully",
+                duration: 3000,
+                gravity: "top",
+                position: "center",
+                backgroundColor: "green",
+            }).showToast();
+
+            let modal = bootstrap.Modal.getInstance(
+                document.getElementById('quickSellModal')
+            );
+
+            modal.hide();
+
+            document.getElementById('qs_product_id').value = "";
+    document.getElementById('qs_qty').value = 0;
+    document.getElementById('qs_amount').value = "";
+    document.getElementById('qs_profit').value = "";
+    document.getElementById('qs_name').value = "";
+    document.getElementById('qs_mobile').value = "";
+
+            loadQuickSellProducts();
+        }
+
+        else {
+
+            Toastify({
+                text: response.data.message,
                 duration: 3000,
                 backgroundColor: "red",
             }).showToast();
+        }
 
-            console.log(error);
-        });
+    })
+
+    .catch(function (error) {
+
+        Toastify({
+            text: "Something went wrong",
+            duration: 3000,
+            backgroundColor: "red",
+        }).showToast();
+
+        console.log(error);
+    });
 }
 
 let cashInBtn = document.querySelector('#cashInModal button.btn-success');
@@ -528,6 +766,39 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 });
+
+
+async function loadQuickSellProducts() {
+
+    try {
+
+        let res = await axios.get('/list-product');
+
+        let productDropdown =
+            document.getElementById('qs_product_id');
+
+        productDropdown.innerHTML =
+            `<option value="">Select Product</option>`;
+
+        res.data.forEach(product => {
+
+            productDropdown.innerHTML += `
+                <option
+                    value="${product.id}"
+                    data-stock="${product.quantity}"
+                    data-price="${product.sell_price}"
+                >
+                    ${product.name} (Stock: ${product.quantity})
+                </option>
+            `;
+        });
+
+    } catch (e) {
+
+        console.log(e);
+
+    }
+}
 
 </script>
 

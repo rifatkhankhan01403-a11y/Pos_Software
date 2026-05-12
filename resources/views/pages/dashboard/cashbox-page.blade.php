@@ -279,6 +279,7 @@ Filter
 <th>Source</th>
 <th>Note</th>
 <th>Amount</th>
+<th width="80">Action</th>
 
 </tr>
 </thead>
@@ -309,6 +310,15 @@ Filter
 <b>{{ number_format($t['amount']) }}</b>
 </td>
 
+<td>
+
+<button
+class="btn btn-sm btn-danger"
+onclick="deleteTransaction('{{ $t['id'] }}','{{ $t['model'] }}')">
+
+<i class="bi bi-trash"></i>
+
+</button>
 
 
 
@@ -454,5 +464,64 @@ document.getElementById('clearDate').addEventListener('click', function () {
 
     document.getElementById('dateRange').value = '';
 });
+
+
+
+async function deleteTransaction(id, model)
+{
+    let confirmDelete = await Swal.fire({
+        title: 'Delete Transaction?',
+        text: "This action cannot be undone",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        confirmButtonText: 'Yes Delete'
+    });
+
+    if (!confirmDelete.isConfirmed) {
+        return;
+    }
+
+    axios.post('/cashbox-delete', {
+
+        id: id,
+        model: model
+
+    })
+
+    .then(function(response){
+
+        if(response.data.status){
+
+            Toastify({
+                text: response.data.message,
+                duration: 3000,
+                gravity: "top",
+                position: "center",
+                backgroundColor: "green",
+            }).showToast();
+
+            setTimeout(() => {
+                location.reload();
+            }, 700);
+        }
+
+    })
+
+    .catch(function(error){
+
+        Toastify({
+            text: "Delete Failed",
+            duration: 3000,
+            gravity: "top",
+            position: "center",
+            backgroundColor: "red",
+        }).showToast();
+
+        console.log(error);
+
+    });
+}
+
 </script>
 @endsection

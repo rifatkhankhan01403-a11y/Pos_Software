@@ -47,52 +47,63 @@ class CashboxController extends Controller
         }
 
         // =========================
-        // CASH IN
-        // =========================
-        $cashInData = $invoiceQuery
-            ->select('paid as amount', 'created_at', 'source')
-            ->get()
-            ->map(function ($item) {
-                return [
-                    'type' => 'Cash In',
-                    'date' => $item->created_at,
-                    'source' => $item->source ?? 'Cash In',
-                    'note' => '-',
-                    'amount' => $item->amount
-                ];
-            });
+      // CASH IN
+// =========================
+$cashInData = $invoiceQuery
+    ->select('id','paid as amount', 'created_at', 'source')
+    ->get()
+    ->map(function ($item) {
+        return [
+            'id' => $item->id,
+            'model' => 'invoice',
 
-        // =========================
-        // CASH OUT (STOCK)
-        // =========================
-        $stockOutData = $stockQuery
-            ->select('paid_amount as amount', 'created_at', 'source', 'note')
-            ->get()
-            ->map(function ($item) {
-                return [
-                    'type' => 'Cash Out',
-                    'date' => $item->created_at,
-                    'source' => $item->source ?? 'Cash Out',
-                    'note' => $item->note ?? '-',
-                    'amount' => $item->amount
-                ];
-            });
+            'type' => 'Cash In',
+            'date' => $item->created_at,
+            'source' => $item->source ?? 'Cash In',
+            'note' => '-',
+            'amount' => $item->amount
+        ];
+    });
 
-        // =========================
-        // CASH OUT (EXPENSE)
-        // =========================
-        $expenseData = $expenseQuery
-            ->select('amount', 'created_at', 'category', 'note')
-            ->get()
-            ->map(function ($item) {
-                return [
-                    'type' => 'Cash Out',
-                    'date' => $item->created_at,
-                    'source' => 'Expense',
-                    'note' => $item->note ?? $item->category ?? '-',
-                    'amount' => $item->amount
-                ];
-            });
+
+// =========================
+// CASH OUT (STOCK)
+// =========================
+$stockOutData = $stockQuery
+    ->select('id','paid_amount as amount', 'created_at', 'source', 'note')
+    ->get()
+    ->map(function ($item) {
+        return [
+            'id' => $item->id,
+            'model' => 'stock',
+
+            'type' => 'Cash Out',
+            'date' => $item->created_at,
+            'source' => $item->source ?? 'Cash Out',
+            'note' => $item->note ?? '-',
+            'amount' => $item->amount
+        ];
+    });
+
+
+// =========================
+// CASH OUT (EXPENSE)
+// =========================
+$expenseData = $expenseQuery
+    ->select('id','amount', 'created_at', 'category', 'note')
+    ->get()
+    ->map(function ($item) {
+        return [
+            'id' => $item->id,
+            'model' => 'expense',
+
+            'type' => 'Cash Out',
+            'date' => $item->created_at,
+            'source' => 'Expense',
+            'note' => $item->note ?? $item->category ?? '-',
+            'amount' => $item->amount
+        ];
+    });
 
         // =========================
         // MERGE ALL
@@ -298,4 +309,41 @@ class CashboxController extends Controller
 
         return $pdf->download('cashbox-report.pdf');
     }
+
+
+// =========================
+// DELETE TRANSACTION
+// =========================
+public function deleteTransaction(Request $request)
+{
+    $shopId = $request->auth_shop_id;
+
+    $id = $request->id;
+    $model = $request->model;
+
+    if ($model == 'invoice') {
+
+        InvoiceBilling::where('id', $id)
+            ->where('shop_id', $shopId)
+            ->delete();
+
+    } elseif ($model == 'stock') {
+
+        StockAdd::where('id', $id)
+            ->where('shop_id', $shopId)
+            ->delete();
+
+    } elseif ($model == 'expense') {
+
+        Expense::where('id', $id)
+            ->where('shop_id', $shopId)
+            ->delete();
+    }
+
+    return response()->json([
+        'status' => true,
+        'message' => 'Transaction Deleted Successfully'
+    ]);
+}
+
 }

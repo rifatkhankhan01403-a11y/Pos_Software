@@ -604,7 +604,7 @@ async function SaveCustomer() {
         let res = await axios.post("/create-customer", {name, email, mobile});
         hideLoader();
 
-        if(res.status === 201){
+        if(res.status === 200){
             successToast("Customer Created!");
             document.getElementById("createCustomerForm").reset();
 

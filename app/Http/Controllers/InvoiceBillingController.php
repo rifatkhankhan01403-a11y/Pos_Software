@@ -139,40 +139,145 @@ class InvoiceBillingController extends Controller
     /* =========================
        QUICK SELL
     ========================= */
-    public function QuickSellStore(Request $request)
-    {
-        try {
+    // public function QuickSellStore(Request $request)
+    // {
+    //     try {
 
-            $shopId = $request->auth_shop_id;
+    //         $shopId = $request->auth_shop_id;
 
-            InvoiceBilling::create([
+    //         InvoiceBilling::create([
 
-                'shop_id' => $shopId,
+    //             'shop_id' => $shopId,
 
-                'customer_name' => $request->customer_name,
-                'customer_mobile' => $request->customer_mobile,
+    //             'customer_name' => $request->customer_name,
+    //             'customer_mobile' => $request->customer_mobile,
 
-                'paid' => $request->amount,
-                'total'=> $request->amount,
-                'profit' => $request->profit,
+    //             'paid' => $request->amount,
+    //             'total'=> $request->amount,
+    //             'profit' => $request->profit,
 
-                'invoice_date' => $request->sell_date,
+    //             'invoice_date' => $request->sell_date,
 
-                'source' => 'Quick Sell'
-            ]);
+    //             'source' => 'Quick Sell'
+    //         ]);
 
-            return response()->json([
-                'status' => true,
-                'message' => 'Quick sell saved successfully'
-            ]);
+    //         return response()->json([
+    //             'status' => true,
+    //             'message' => 'Quick sell saved successfully'
+    //         ]);
 
-        } catch (\Exception $e) {
+    //     } catch (\Exception $e) {
 
+    //         return response()->json([
+    //             'status' => false,
+    //             'error' => $e->getMessage()
+    //         ]);
+
+    //     }
+    // }
+
+
+
+public function QuickSellStore(Request $request)
+{
+    try {
+
+        $shopId = $request->auth_shop_id;
+
+        // =========================
+        // VALIDATION: AMOUNT REQUIRED
+        // =========================
+        if (!$request->amount || $request->amount <= 0) {
             return response()->json([
                 'status' => false,
-                'error' => $e->getMessage()
+                'message' => 'Amount is required'
             ]);
-
         }
+
+        $product = null;
+        $qty = (float) $request->qty;
+
+        // =========================
+        // IF PRODUCT SELECTED
+        // =========================
+        if ($request->product_id) {
+
+            $product = Product::where('shop_id', $shopId)
+                ->where('id', $request->product_id)
+                ->first();
+
+            if (!$product) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Product not found'
+                ]);
+            }
+
+            // QTY REQUIRED WHEN PRODUCT EXISTS
+            if ($qty < 1) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Quantity must be at least 1'
+                ]);
+            }
+
+            // STOCK CHECK
+            if ($qty > $product->quantity) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Insufficient stock'
+                ]);
+            }
+        }
+
+        // =========================
+        // PROFIT (only if product exists)
+        // =========================
+        $profit = 0;
+
+        if ($product) {
+            $profit =
+                ((float)$product->sell_price - (float)$product->buy_price) * $qty;
+
+            // reduce stock
+            $product->quantity -= $qty;
+            $product->save();
+        }
+
+        // =========================
+        // SAVE INVOICE
+        // =========================
+        InvoiceBilling::create([
+            'shop_id' => $shopId,
+            'customer_name' => $request->customer_name,
+            'customer_mobile' => $request->customer_mobile,
+
+            'items' => $product ? [[
+                'product_id' => $product->id,
+                'product_name' => $product->name,
+                'qty' => $qty,
+                'sale_price' => $product->sell_price
+            ]] : [],
+
+            'paid' => (float) $request->amount,
+            'total' => (float) $request->amount,
+            'profit' => round($profit, 2),
+            'invoice_date' => $request->sell_date,
+            'source' => 'Quick Sell'
+        ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Quick sell saved successfully'
+        ]);
+
+    } catch (\Exception $e) {
+
+        return response()->json([
+            'status' => false,
+            'error' => $e->getMessage()
+        ]);
     }
 }
+}
+
