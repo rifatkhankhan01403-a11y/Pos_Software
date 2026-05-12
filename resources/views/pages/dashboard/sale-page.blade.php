@@ -72,10 +72,18 @@
             <span>৳ <span id="discount"></span></span>
         </div>
 
-        <div class="d-flex justify-content-between text-xs my-2 border-top pt-2">
-            <span class="text-dark fw-bold">PAYABLE</span>
-            <span>৳ <span id="payable"></span></span>
-        </div>
+      <div class="d-flex justify-content-between text-xs my-2 border-top pt-2">
+    <span class="text-dark fw-bold">PAYABLE</span>
+    <span>৳ <span id="payable"></span></span>
+</div>
+
+<!-- NEW PAID ROW -->
+<div class="d-flex justify-content-between text-xs my-2">
+    <span class="text-success fw-bold">PAID</span>
+    <span class="text-success">
+        ৳ <span id="paidDisplay"></span>
+    </span>
+</div>
 
     </div>
 
@@ -124,6 +132,18 @@
             <!-- Product Section -->
           <div class="col-md-4 col-lg-4 p-2">
                 <div class="shadow-sm h-100 bg-white rounded-3 p-3">
+
+
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="text-xs text-bold">Products</h6>
+
+        <button class="btn btn-sm btn-primary"
+                onclick="OpenProductModal()">
+            + Add Product
+        </button>
+    </div>
+
+
                     <table class="table  w-100" id="productTable">
                         <thead class="w-100">
                         <tr class="text-xs text-bold">
@@ -276,6 +296,124 @@
         </div>
     </div>
 </div>
+
+{{--
+product --}}
+<!-- Create Product Modal -->
+<div class="modal animated zoomIn"
+     id="createProductModal"
+     tabindex="-1"
+     aria-hidden="true">
+
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Create Product</h5>
+            </div>
+
+            <div class="modal-body">
+
+                <form id="save-product-form">
+
+                    <!-- Category -->
+                    <label class="form-label">Category</label>
+                    <select class="form-control form-select"
+                            id="productCategory">
+
+                        <option value="">Select Category</option>
+
+                    </select>
+
+                    <!-- Subcategory -->
+                    <label class="form-label mt-2">Sub Category</label>
+
+                    <select class="form-control form-select"
+                            id="productSubCategory">
+
+                        <option value="">Select Sub Category</option>
+
+                    </select>
+
+                    <!-- Product Name -->
+                    <label class="form-label mt-2">Name</label>
+
+                    <input type="text"
+                           class="form-control"
+                           id="productName">
+
+                    <!-- Quantity -->
+                    <label class="form-label mt-2">Quantity</label>
+
+                    <input type="number"
+                           class="form-control"
+                           id="productQuantity">
+
+                    <!-- Buy Price -->
+                    <label class="form-label mt-2">Buy Price</label>
+
+                    <input type="text"
+                           class="form-control"
+                           id="productBuyPrice">
+
+                    <!-- Sell Price -->
+                    <label class="form-label mt-2">Sell Price</label>
+
+                    <input type="text"
+                           class="form-control"
+                           id="productSellPrice">
+
+                    <!-- Note -->
+                    <label class="form-label mt-2">Note</label>
+
+                    <input type="text"
+                           class="form-control"
+                           id="productNote">
+
+                    <br>
+
+                    <!-- Preview -->
+                    <img class="w-15"
+                         id="newImg"
+                         src="{{asset('images/default.jpg')}}">
+
+                    <br><br>
+
+                    <!-- Image -->
+                    <label class="form-label">Image</label>
+
+                    <input type="file"
+                           class="form-control"
+                           id="productImg"
+                           oninput="newImg.src=window.URL.createObjectURL(this.files[0])">
+
+                </form>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button class="btn bg-gradient-primary"
+                        data-bs-dismiss="modal">
+                    Close
+                </button>
+
+                <button onclick="SaveProduct()"
+                        class="btn bg-gradient-success">
+                    Save
+                </button>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
     <script>
         (async ()=>{
           showLoader();
@@ -332,21 +470,24 @@
     });
 
     // Discount (FIXED AMOUNT)
-    if(discountAmount > Total){
-        discountAmount = Total;
-    }
+ let OriginalTotal = Total;
 
-    Discount = discountAmount;
-    Total = Total - Discount;
+// Discount
+if(discountAmount > OriginalTotal){
+    discountAmount = OriginalTotal;
+}
 
-    // VAT
-    Vat = (Total * vatPercentage / 100);
+Discount = discountAmount;
 
-    // Payable
-    Payable = Total + Vat;
+// VAT AFTER DISCOUNT
+let afterDiscount = OriginalTotal - Discount;
 
+Vat = (afterDiscount * vatPercentage / 100);
+
+// FINAL PAYABLE
+Payable = afterDiscount + Vat;
     // Format
-    Total = Total.toFixed(2);
+   Total = OriginalTotal.toFixed(2);
     Vat = Vat.toFixed(2);
     Discount = Discount.toFixed(2);
     Payable = Payable.toFixed(2);
@@ -356,6 +497,29 @@
     document.getElementById('vat').innerText = Vat;
     document.getElementById('discount').innerText = Discount;
     document.getElementById('payable').innerText = Payable;
+
+    if (!window.invoiceDue) {
+
+    document.getElementById('paidDisplay').innerText = Payable;
+
+} else {
+
+    // IF DUE USED
+    let oldPaid = parseFloat(window.invoiceDue.paid || 0);
+    let oldDue = parseFloat(window.invoiceDue.due || 0);
+
+    let oldTotal = oldPaid + oldDue;
+
+    // calculate same paid ratio after discount/vat
+    let newPaid = Payable;
+
+    if (oldTotal > 0) {
+        newPaid = (Payable * oldPaid) / oldTotal;
+    }
+
+    document.getElementById('paidDisplay').innerText =
+        parseFloat(newPaid).toFixed(2);
+}
 }
 
         function add() {
@@ -493,12 +657,12 @@ async function SaveCustomer() {
                 addModal(PId,PName,PPrice)
             })
 
-            new DataTable('#productTable',{
-                order:[[0,'desc']],
-                scrollCollapse: false,
-                info: false,
-                lengthChange: false
-            });
+           new DataTable('#productTable',{
+    ordering: false,
+    scrollCollapse: false,
+    info: false,
+    lengthChange: false
+});
         }
 
         async function createInvoice() {
@@ -578,6 +742,7 @@ let Data = {
     $("#vat").text("");
     $("#discount").text("");
     $("#payable").text("");
+    $("#paidDisplay").text("");
 
     // 4. Reset discount input
     $("#discountP").val(0);
@@ -644,20 +809,23 @@ function resetDue() {
 }
 
 function saveDue() {
+
     let paidInput = document.getElementById("paidAmount").value;
 
-    // 👉 IF EMPTY = FULL PAID
+    // IF EMPTY = FULL PAID
     if (paidInput === "") {
-        window.invoiceDue = {
-            paid: parseFloat(document.getElementById("payable").innerText),
-            due: 0,
-            dueDate: null
-        };
+
+        window.invoiceDue = null;
+
+        document.getElementById("paidDisplay").innerText =
+            document.getElementById("payable").innerText;
+
         return;
     }
 
     let paid = parseFloat(paidInput);
     let total = parseFloat(document.getElementById("dueTotal").value);
+
     let due = total - paid;
 
     if (due < 0) due = 0;
@@ -667,10 +835,200 @@ function saveDue() {
         due: due,
         dueDate: document.getElementById("dueDate").value
     };
+
+    // FRONTEND DISPLAY ONLY
+    document.getElementById("paidDisplay").innerText =
+        parseFloat(paid).toFixed(2);
 }
 
 
 
+
+
+//product
+
+
+// OPEN PRODUCT MODAL
+function OpenProductModal(){
+    $('#createProductModal').modal('show');
+}
+
+
+// LOAD CATEGORY
+FillCategoryDropDown();
+
+async function FillCategoryDropDown(){
+
+    let res = await axios.get("/list-category");
+
+    let categorySelect =
+        document.getElementById('productCategory');
+
+    categorySelect.innerHTML =
+        `<option value="">Select Category</option>`;
+
+    res.data.forEach(function(item){
+
+        categorySelect.innerHTML += `
+            <option value="${item.id}">
+                ${item.name}
+            </option>
+        `;
+    });
+
+    window.categoryData = res.data;
+}
+
+
+// LOAD SUBCATEGORY
+document.getElementById('productCategory')
+.addEventListener('change', function () {
+
+    let categoryId = this.value;
+
+    let subSelect =
+        document.getElementById('productSubCategory');
+
+    subSelect.innerHTML =
+        `<option value="">Select Sub Category</option>`;
+
+    let selectedCategory =
+        window.categoryData.find(c => c.id == categoryId);
+
+    if(selectedCategory &&
+       selectedCategory.sub_categories.length > 0){
+
+        selectedCategory.sub_categories.forEach(function(sub){
+
+            subSelect.innerHTML += `
+                <option value="${sub.id}">
+                    ${sub.name}
+                </option>
+            `;
+        });
+    }
+});
+
+
+// SAVE PRODUCT
+async function SaveProduct(){
+
+    let productCategory =
+        document.getElementById('productCategory').value;
+
+    let productSubCategory =
+        document.getElementById('productSubCategory').value;
+
+    let productName =
+        document.getElementById('productName').value;
+
+    let productQuantity =
+        document.getElementById('productQuantity').value;
+
+    let productBuyPrice =
+        document.getElementById('productBuyPrice').value;
+
+    let productSellPrice =
+        document.getElementById('productSellPrice').value;
+
+    let productNote =
+        document.getElementById('productNote').value;
+
+    let productImg =
+        document.getElementById('productImg').files[0];
+
+
+    // VALIDATION
+    if(productCategory.length === 0){
+
+        errorToast("Category Required");
+
+    }
+    else if(productName.length === 0){
+
+        errorToast("Product Name Required");
+
+    }
+    else if(productQuantity.length === 0){
+
+        errorToast("Quantity Required");
+
+    }
+    else if(productBuyPrice.length === 0){
+
+        errorToast("Buy Price Required");
+
+    }
+    else if(productSellPrice.length === 0){
+
+        errorToast("Sell Price Required");
+
+    }
+    else{
+
+        let formData = new FormData();
+
+        if(productImg){
+            formData.append('img', productImg);
+        }
+
+        formData.append('name', productName);
+        formData.append('quantity', productQuantity);
+        formData.append('buy_price', productBuyPrice);
+        formData.append('sell_price', productSellPrice);
+        formData.append('note', productNote);
+        formData.append('category_id', productCategory);
+        formData.append('subcategory_id', productSubCategory);
+
+        const config = {
+            headers:{
+                'content-type':'multipart/form-data'
+            }
+        };
+
+        showLoader();
+
+        try{
+
+            let res = await axios.post(
+                "/create-product",
+                formData,
+                config
+            );
+
+            hideLoader();
+
+            if(res.status === 201){
+
+                successToast("Product Added Successfully");
+
+                // CLOSE MODAL
+                $('#createProductModal').modal('hide');
+
+                // RESET FORM
+                document
+                    .getElementById("save-product-form")
+                    .reset();
+
+                // RESET IMAGE
+                document.getElementById('newImg').src =
+                    "{{asset('images/default.jpg')}}";
+
+                // RELOAD PRODUCT LIST
+                await ProductList();
+
+            }
+            else{
+                errorToast("Request Failed");
+            }
+
+        }catch(e){
+
+            hideLoader();
+            errorToast("Something Went Wrong");
+        }
+    }
+}
 
     </script>
 

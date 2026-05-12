@@ -466,7 +466,7 @@
 }
 let supplierData = [];
 
-async function loadSupplierList(){
+async function loadSupplierList(selectedId = null){
     try{
         const res = await axios.get('/list-supplier', {
             headers: {
@@ -476,10 +476,10 @@ async function loadSupplierList(){
 
         supplierData = Array.isArray(res.data) ? res.data : [];
 
+        // 🔥 latest first (if backend not already sorted)
+        supplierData = supplierData.reverse();
+
         const select = document.getElementById('supplier_id');
-
-        if(!select) return;
-
         select.innerHTML = `<option value="">Select Supplier</option>`;
 
         supplierData.forEach(item=>{
@@ -488,6 +488,12 @@ async function loadSupplierList(){
             opt.textContent = item.name;
             select.appendChild(opt);
         });
+
+        // ✅ auto select newly created supplier
+        if(selectedId){
+            select.value = selectedId;
+            select.dispatchEvent(new Event('change'));
+        }
 
     }catch(err){
         console.error("Supplier Load Error:", err);
@@ -851,6 +857,42 @@ document.getElementById('toggle_due_btn').addEventListener('click', function () 
         arrow.innerHTML = '▾'; // down arrow
     }
 });
+
+
+
+async function loadSupplierList(selectedId = null){
+    try{
+        const res = await axios.get('/list-supplier', {
+            headers: {
+                'id': localStorage.getItem('user_id')
+            }
+        });
+
+        supplierData = Array.isArray(res.data) ? res.data : [];
+
+        // 🔥 latest first (if backend not already sorted)
+        supplierData = supplierData.reverse();
+
+        const select = document.getElementById('supplier_id');
+        select.innerHTML = `<option value="">Select Supplier</option>`;
+
+        supplierData.forEach(item=>{
+            const opt = document.createElement('option');
+            opt.value = item.id;
+            opt.textContent = item.name;
+            select.appendChild(opt);
+        });
+
+        // ✅ auto select newly created supplier
+        if(selectedId){
+            select.value = selectedId;
+            select.dispatchEvent(new Event('change'));
+        }
+
+    }catch(err){
+        console.error("Supplier Load Error:", err);
+    }
+}
 
 </script>
 @endsection
