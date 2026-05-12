@@ -254,7 +254,254 @@
     </form>
 </div>
 
+
+
+
+<div class="modal fade" id="createSupplierModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content p-3">
+            <h5 class="modal-title">Add Supplier</h5>
+            <form id="createSupplierForm" enctype="multipart/form-data">
+                @csrf
+                <div class="mb-2">
+                    <label>Name <span class="text-danger">*</span></label>
+                    <input type="text" name="name" class="form-control" placeholder="Enter supplier name" required>
+                </div>
+                <div class="mb-2">
+                    <label>Mobile <span class="text-danger">*</span></label>
+                    <input type="text" name="mobile" class="form-control" placeholder="Enter mobile" required>
+                </div>
+                <div class="mb-2">
+    <label>Email <span class="text-danger"></span></label>
+    <input type="email" name="email" class="form-control" placeholder="Enter email" required>
+</div>
+                <div class="mb-2">
+                    <label>Address</label>
+                    <textarea name="address" class="form-control" placeholder="Optional"></textarea>
+                </div>
+                <div class="mb-2">
+                    <label>Note</label>
+                    <textarea name="note" class="form-control" placeholder="Optional"></textarea>
+                </div>
+                <div class="mb-2">
+                    <label>Image</label>
+                    <input type="file" name="img" class="form-control">
+                </div>
+                <div class="text-end">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" onclick="saveSupplier()" class="btn btn-success">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{{--
+product modal --}}
+
+<div class="modal animated zoomIn" id="create-modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create Product</h5>
+            </div>
+
+            <div class="modal-body">
+                <form id="save-form">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-12 p-1">
+
+                                <!-- Category -->
+                                <label class="form-label">Category</label>
+                                <select class="form-control form-select" id="productCategory">
+                                    <option value="">Select Category</option>
+                                </select>
+
+                                <!-- Subcategory -->
+                                <label class="form-label mt-2">Sub Category</label>
+                                <select class="form-control form-select" id="productSubCategory">
+                                    <option value="">Select Sub Category</option>
+                                </select>
+
+                                <!-- Name -->
+                                <label class="form-label mt-2">Name</label>
+                                <input type="text" class="form-control" id="productName">
+
+                                {{-- <!-- Unit -->
+                                <label class="form-label mt-2">Unit</label>
+                                <input type="text" class="form-control" id="productUnit"> --}}
+
+                                <!-- Quantity -->
+                                <label class="form-label mt-2">Quantity</label>
+                                <input type="number" class="form-control" id="productQuantity">
+
+                                <!-- Buy Price -->
+                                <label class="form-label mt-2">Buy Price</label>
+                                <input type="text" class="form-control" id="productBuyPrice">
+
+                                <!-- Sell Price -->
+                                <label class="form-label mt-2">Sell Price</label>
+                                <input type="text" class="form-control" id="productSellPrice">
+
+                                <!-- Note -->
+                                <label class="form-label mt-2">Note</label>
+                                <input type="text" class="form-control" id="productNote">
+
+                                <br/>
+
+                                <!-- Image Preview -->
+                                <img class="w-15" id="newImg" src="{{asset('images/default.jpg')}}"/>
+                                <br/>
+
+                                <!-- Image -->
+                                <label class="form-label">Image</label>
+                                <input oninput="newImg.src=window.URL.createObjectURL(this.files[0])"
+                                       type="file"
+                                       class="form-control"
+                                       id="productImg">
+
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button id="modal-close" class="btn bg-gradient-primary mx-2" data-bs-dismiss="modal">Close</button>
+                <button onclick="Save()" class="btn bg-gradient-success">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 <script>
+
+    //product
+
+     async function Save() {
+
+        let productCategory = document.getElementById('productCategory').value;
+        let productSubCategory = document.getElementById('productSubCategory').value;
+        let productName = document.getElementById('productName').value;
+      //  let productUnit = document.getElementById('productUnit').value;
+        let productQuantity = document.getElementById('productQuantity').value;
+        let productBuyPrice = document.getElementById('productBuyPrice').value;
+        let productSellPrice = document.getElementById('productSellPrice').value;
+        let productNote = document.getElementById('productNote').value;
+        let productImg = document.getElementById('productImg').files[0]; // ✅ FIXED
+
+
+        if (productCategory.length === 0) {
+            errorToast("Product Category Required !");
+        }
+        else if(productName.length === 0){
+            errorToast("Product Name Required !");
+        }
+        // else if(productUnit.length === 0){
+        //     errorToast("Product Unit Required !");
+        // }
+        // else if(productQuantity.length === 0){
+        //     errorToast("Quantity Required !");
+        // }
+        else if(productBuyPrice.length === 0){
+            errorToast("Buy Price Required !");
+        }
+
+        else {
+
+            document.getElementById('modal-close').click();
+
+            let formData = new FormData();
+
+            if(productImg){
+                formData.append('img', productImg)
+            }
+
+            formData.append('name', productName)
+            formData.append('quantity', productQuantity)
+            formData.append('buy_price', productBuyPrice)
+            formData.append('sell_price', productSellPrice)
+            formData.append('note', productNote)
+            formData.append('category_id', productCategory)
+            formData.append('subcategory_id', productSubCategory)
+
+            const config = {
+                headers: {
+                    'content-type': 'multipart/form-data'
+                }
+            }
+
+            showLoader();
+            let res = await axios.post("/create-product", formData, config)
+            hideLoader();
+
+           if(res.status === 201){
+    successToast('Product Added Successfully');
+    document.getElementById("save-form").reset();
+
+    await loadProductList();   // 🔥 refresh productData instantly
+}
+            else{
+                errorToast("Request fail !");
+            }
+        }
+    }
+
+
+
+function saveSupplier() {
+    const form = document.getElementById('createSupplierForm');
+    const formData = new FormData(form);
+
+    // Client-side validation
+    const name = formData.get('name').trim();
+    const mobile = formData.get('mobile').trim();
+
+    if(!name) {
+        alert('Name is required!');
+        return;
+    }
+    if(!mobile) {
+        alert('Mobile is required!');
+        return;
+    }
+
+   axios.post('/create-supplier', formData, {
+    headers: {
+        'Content-Type': 'multipart/form-data',
+
+    }
+})
+    .then(res => {
+        successToast('Supplier added successfully!');
+        form.reset();
+        const modalEl = document.getElementById('createSupplierModal');
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        modal.hide();
+
+        // Optionally reload supplier list
+
+       loadSupplierList();
+    })
+    .catch(err => {
+        if(err.response && err.response.data) {
+            const errors = err.response.data.errors || {};
+            let msg = '';
+            for (let key in errors) {
+                msg += errors[key].join(', ') + '\n';
+            }
+          errorToast('Error adding supplier!');
+        } else {
+             errorToast('Error adding supplier!');
+        }
+        console.error(err);
+    });
+}
+
+
+
     let itemIndex = 1, dueIndex = 0;
     let paidManuallyChanged = false
     const purchaseList = document.getElementById('purchaseList');
@@ -539,27 +786,27 @@ if(categoryName){
 
 
 let categoryData = [];
-
 async function loadCategoryList(){
     try{
         const res = await axios.get('/list-category');
 
-        categoryData = res.data || [];
+        console.log("CATEGORY RESPONSE:", res.data);
 
-        const select = document.getElementById('product_category');
+        categoryData = res.data;
 
+        let select = document.getElementById('productCategory');
         select.innerHTML = `<option value="">Select Category</option>`;
 
-        categoryData.forEach(item=>{
-            select.innerHTML += `<option value="${item.name}">${item.name}</option>`;
+        categoryData.forEach(cat=>{
+            select.innerHTML += `
+                <option value="${cat.id}">${cat.name}</option>
+            `;
         });
 
     }catch(err){
-        console.error("Category Load Error:", err);
+        console.log(err);
     }
 }
-
-
     function renderProductSuggestions(query=''){
         const q = query.trim().toLowerCase();
         if(!q){

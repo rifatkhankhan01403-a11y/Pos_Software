@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Supplier;
 use App\Models\Product;
 use App\Models\StockAdd;
+use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -17,6 +18,14 @@ class StockAddController extends Controller
     }
 
 
+  public function CategoryList(Request $request)
+{
+    $shopId = auth()->user()->shop_id;
+
+    return Category::with('sub_categories')
+        ->where('shop_id', $shopId)
+        ->get();
+}
     // =========================
     // CREATE STOCK PURCHASE
     // =========================
