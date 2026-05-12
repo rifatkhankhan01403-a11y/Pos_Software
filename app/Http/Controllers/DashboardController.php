@@ -168,12 +168,24 @@ foreach ($stockInvoices as $invoice) {
         // =====================
         $stock = Product::where('shop_id', $shopId)->sum('quantity');
 
+//dashboar cart
 
-        $receivable = InvoiceBilling::where('shop_id', $shopId)->sum('total')
-            - InvoiceBilling::where('shop_id', $shopId)->sum('paid');
+       $customer = InvoiceBilling::where('shop_id', $shopId)
+    ->where('source', 'Sell')
+    ->selectRaw('SUM(total) as total, SUM(paid) as paid')
+    ->first();
 
-        $payable = StockAdd::where('shop_id', $shopId)->sum('total_cost')
-            - StockAdd::where('shop_id', $shopId)->sum('paid_amount');
+$receivable = ($customer->total ?? 0) - ($customer->paid ?? 0);
+
+
+$supplier = StockAdd::where('shop_id', $shopId)
+    ->where('source', 'Purchase')
+    ->selectRaw('SUM(total_cost) as total_cost, SUM(paid_amount) as paid_amount')
+    ->first();
+
+$payable = ($supplier->total_cost ?? 0) - ($supplier->paid_amount ?? 0);
+
+
 
         $expense = Expense::where('shop_id', $shopId)->sum('amount');
 

@@ -144,16 +144,17 @@ public function partyLedger(Request $request)
     $shopId = $request->auth_shop_id;
 
     /* =========================
-       CUSTOMER LEDGER
+       CUSTOMER LEDGER (SELL ONLY)
     ========================= */
     if ($type === 'customer') {
 
         $customer = Customer::where('mobile', $mobile)
-            ->where('shop_id',$shopId)
+            ->where('shop_id', $shopId)
             ->first();
 
         $transactions = InvoiceBilling::where('customer_mobile', $mobile)
-            ->where('shop_id',$shopId)
+            ->where('shop_id', $shopId)
+            ->where('source', 'Sell')
             ->orderBy('created_at', 'asc')
             ->get();
 
@@ -183,16 +184,17 @@ public function partyLedger(Request $request)
     }
 
     /* =========================
-       SUPPLIER LEDGER
+       SUPPLIER LEDGER (PURCHASE ONLY)
     ========================= */
     if ($type === 'supplier') {
 
         $supplier = Supplier::where('mobile', $mobile)
-            ->where('shop_id',$shopId)
+            ->where('shop_id', $shopId)
             ->first();
 
         $transactions = StockAdd::where('supplier_phone', $mobile)
-            ->where('shop_id',$shopId)
+            ->where('shop_id', $shopId)
+            ->where('source', 'Purchase')
             ->orderBy('created_at', 'asc')
             ->get();
 
@@ -216,8 +218,8 @@ public function partyLedger(Request $request)
             'mobile' => $mobile,
             'transactions' => $data,
             'total_payable' => $transactions->sum('total_cost'),
-            'total_paid' => $transactions->sum('paid_amount'),
-            'total_due'  => $transactions->sum('due_amount'),
+            'total_paid'    => $transactions->sum('paid_amount'),
+            'total_due'     => $transactions->sum('due_amount'),
         ]);
     }
 
@@ -232,16 +234,22 @@ public function dueBookPage(Request $request)
 {
     $shopId = $request->auth_shop_id;
 
-    $customer = InvoiceBilling::where('shop_id',$shopId)
+    // Customer Receivable (Only Sell invoices)
+    $customer = InvoiceBilling::where('shop_id', $shopId)
+        ->where('source', 'Sell')
         ->selectRaw('SUM(total) as total_amount, SUM(paid) as paid')
         ->first();
 
-    $supplier = StockAdd::where('shop_id',$shopId)
+    // Supplier Payable (Only Purchase stock adds)
+    $supplier = StockAdd::where('shop_id', $shopId)
+        ->where('source', 'Purchase')
         ->selectRaw('SUM(total_cost) as total_amount, SUM(paid_amount) as paid')
         ->first();
 
+    // Calculations
     $receivable = ($customer->total_amount ?? 0) - ($customer->paid ?? 0);
-    $payable    = ($supplier->total_amount ?? 0) - ($supplier->paid ?? 0);
+
+    $payable = ($supplier->total_amount ?? 0) - ($supplier->paid ?? 0);
 
     $net = $receivable - $payable;
 
@@ -251,7 +259,6 @@ public function dueBookPage(Request $request)
         'net'
     ));
 }
-
 
 /* =========================
    STORE DUE
