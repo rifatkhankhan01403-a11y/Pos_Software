@@ -33,7 +33,7 @@ return new class extends Migration
         $table->json('due_plan')->nullable();
 
         // summary
-        $table->integer('total_qty')->default(0);
+        $table->integer('total_qty')->nullable();
         $table->decimal('total_cost', 10, 2)->default(0);
         $table->decimal('paid_amount', 10, 2)->default(0);
         $table->decimal('due_amount', 10, 2)->default(0);

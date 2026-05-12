@@ -138,9 +138,9 @@
         // else if(productUnit.length === 0){
         //     errorToast("Product Unit Required !");
         // }
-        else if(productQuantity.length === 0){
-            errorToast("Quantity Required !");
-        }
+        // else if(productQuantity.length === 0){
+        //     errorToast("Quantity Required !");
+        // }
         else if(productBuyPrice.length === 0){
             errorToast("Buy Price Required !");
         }

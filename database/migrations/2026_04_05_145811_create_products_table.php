@@ -35,7 +35,7 @@ $table->unsignedBigInteger('shop_id');
             $table->string('unit', 50)->nullable();
 
             // Stock
-            $table->integer('quantity');
+           $table->integer('quantity')->nullable();
 
             // Pricing
             $table->decimal('buy_price', 10, 2);
