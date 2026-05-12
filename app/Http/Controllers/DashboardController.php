@@ -171,7 +171,7 @@ foreach ($stockInvoices as $invoice) {
 //dashboar cart
 
        $customer = InvoiceBilling::where('shop_id', $shopId)
-    ->where('source', 'Sell')
+     ->whereIn('source', ['Sell', 'Customer Due'])
     ->selectRaw('SUM(total) as total, SUM(paid) as paid')
     ->first();
 
@@ -179,7 +179,7 @@ $receivable = ($customer->total ?? 0) - ($customer->paid ?? 0);
 
 
 $supplier = StockAdd::where('shop_id', $shopId)
-    ->where('source', 'Purchase')
+       ->whereIn('source', ['Purchase', 'Supplier Due'])
     ->selectRaw('SUM(total_cost) as total_cost, SUM(paid_amount) as paid_amount')
     ->first();
 
