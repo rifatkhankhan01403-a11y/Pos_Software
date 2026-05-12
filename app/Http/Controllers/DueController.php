@@ -154,7 +154,7 @@ public function partyLedger(Request $request)
 
         $transactions = InvoiceBilling::where('customer_mobile', $mobile)
             ->where('shop_id', $shopId)
-            ->where('source', 'Sell')
+              ->whereIn('source', ['Sell', 'Customer Due'])
             ->orderBy('created_at', 'asc')
             ->get();
 
@@ -194,7 +194,7 @@ public function partyLedger(Request $request)
 
         $transactions = StockAdd::where('supplier_phone', $mobile)
             ->where('shop_id', $shopId)
-            ->where('source', 'Purchase')
+              ->whereIn('source', ['Purchase', 'Supplier Due'])
             ->orderBy('created_at', 'asc')
             ->get();
 
