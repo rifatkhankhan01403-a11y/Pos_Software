@@ -109,7 +109,7 @@
             <td>{{ $index + 1 }}</td>
              <td>{{ $e->formatted_created_at }}</td>
             <td>{{ $e->category }}</td>
-            <td>৳ {{ number_format($e->amount) }}</td>
+            <td>Tk  {{ number_format($e->amount) }}</td>
 
             <td>{{ $e->note }}</td>
         </tr>

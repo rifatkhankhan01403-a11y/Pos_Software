@@ -79,7 +79,7 @@
     <td>{{ $t['customer'] }}</td>
     <td>{{ $t['mobile'] }}</td>
     <td>{{ $t['qty'] }}</td>
-    <td>৳ {{ number_format($t['amount']) }}</td>
+    <td>Tk {{ number_format($t['amount']) }}</td>
     <td>{{ $t['source'] }}</td>
 </tr>
 @endforeach

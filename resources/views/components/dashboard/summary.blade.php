@@ -20,6 +20,21 @@ background:#fff4f7;
 
 /* Header Filter */
 
+
+.pdf-btn{
+border:none;
+background:#198754;
+color:white;
+padding:6px 14px;
+border-radius:6px;
+font-size:13px;
+font-weight:600;
+transition:.2s;
+}
+
+.pdf-btn:hover{
+background:#157347;
+}
 .filter-btn{
 border:none;
 background:#ffd6e2;
@@ -125,7 +140,13 @@ margin-bottom:10px;
 <button class="filter-btn" data-filter="yearly">Yearly</button>
 <button class="filter-btn" data-filter="all">All Time</button>
 
+<button class="pdf-btn"
+        onclick="downloadDashboardPdf()">
+    📄 Download PDF
+</button>
+
 </div>
+
 
 </div>
 
@@ -294,6 +315,7 @@ margin-bottom:10px;
 
 <script>
 
+let currentFilter = 'today';
 /* FILTER BUTTON CLICK */
 
 document.querySelectorAll(".filter-btn").forEach(button=>{
@@ -307,6 +329,8 @@ btn.classList.remove("active")
 this.classList.add("active")
 
 let filter=this.dataset.filter
+
+currentFilter = filter;
 
 loadDashboardData(filter)
 
@@ -398,6 +422,12 @@ loadDashboardSummary();
 
 loadDashboardData('today')
 
+
+function downloadDashboardPdf(){
+
+    window.open('/dashboard-pdf?filter=' + currentFilter, '_blank');
+
+}
 </script>
 
 

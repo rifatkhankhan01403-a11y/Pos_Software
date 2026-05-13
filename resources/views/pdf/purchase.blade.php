@@ -115,9 +115,9 @@
             <td>{{ $p->supplier_name ?? '-' }}</td>
             <td>{{ $p->supplier_phone ?? '-' }}</td>
             <td>{{ $totalQty }}</td>
-            <td>${{ number_format($p->total_cost) }}</td>
-            <td>${{ number_format($p->paid_amount) }}</td>
-            <td>${{ number_format($p->due_amount) }}</td>
+            <td>Tk {{ number_format($p->total_cost) }}</td>
+            <td>Tk{{ number_format($p->paid_amount) }}</td>
+            <td>Tk{{ number_format($p->due_amount) }}</td>
             <td>{{ \Carbon\Carbon::parse($p->created_at)->format('d M Y') }}</td>
         </tr>
 

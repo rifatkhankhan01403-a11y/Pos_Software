@@ -123,7 +123,7 @@
             <td>{{ $sale->customer_name ?? '-' }}</td>
             <td>{{ $sale->customer_mobile ?? '-' }}</td>
             <td>{{ $sale->qty ?? 0 }}</td>
-            <td>৳ {{ number_format($sale->total ?? 0) }}</td>
+            <td>Tk  {{ number_format($sale->total ?? 0) }}</td>
             <td>{{ $sale->courier ?? '-' }}</td>
 
             <td>

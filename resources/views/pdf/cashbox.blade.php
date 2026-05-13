@@ -120,7 +120,7 @@
             <td>{{ $t['date'] }}</td>
             <td>{{ $t['source'] }}</td>
             <td>{{ $t['note'] }}</td>
-            <td>৳ {{ number_format($t['amount']) }}</td>
+            <td>Tk {{ number_format($t['amount']) }}</td>
         </tr>
         @endforeach
     </tbody>

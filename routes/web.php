@@ -66,7 +66,7 @@ Route::post('/stock-store', [StockAddController::class, 'CreateStockPurchase'])-
 //dashboard
 Route::get('/dashboard-data', [App\Http\Controllers\DashboardController::class,'getDashboardData'])->middleware([TokenVerificationMiddleware::class]);
 Route::get('/dashboard-summary', [DashboardController::class, 'getDashboardSummary'])->middleware([TokenVerificationMiddleware::class]);
-
+Route::get('/dashboard-pdf', [DashboardController::class,'downloadDashboardPdf'])->middleware([TokenVerificationMiddleware::class]);
 
 //purchase book
 Route::get('/purchase-book', [PurchaseBookController::class, 'purchaseBook'])->middleware([TokenVerificationMiddleware::class]);
