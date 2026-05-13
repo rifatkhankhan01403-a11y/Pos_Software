@@ -272,7 +272,9 @@
 <strong id="finalTotal">0</strong>
 </div>
 
-<button class="btn btn-success w-100 mt-3" onclick="saveCOD()">Save Sale</button>
+<button class="btn btn-success w-100 mt-3" onclick="confirmSaveCOD()">
+    Save Sale
+</button>
 
 </div>
 
@@ -352,6 +354,25 @@
 
 
 <script>
+
+async function confirmSaveCOD(){
+
+    let confirmSave = await Swal.fire({
+        title: 'Save Conditional Sale?',
+        text: "Do you want to save this sale?",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, Save',
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: '#198754'
+    });
+
+    if(confirmSave.isConfirmed){
+        saveCOD();
+    }
+}
+
+
 
     function cleanNumber(val){
     return Number(val || 0).toFixed(0);

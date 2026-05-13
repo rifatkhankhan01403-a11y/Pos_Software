@@ -281,12 +281,29 @@ $net = $cash ;
     $sellQuery = InvoiceBilling::where('shop_id', $shopId)
         ->whereIn('source', ['Sell', 'Quick Sell']);
 
+
     if ($start && $end) {
         $sellQuery->whereBetween('created_at', [$start, $end]);
     }
 
     $sell = $sellQuery->sum('total');
 
+
+//  $normalSell = InvoiceBilling::where('shop_id', $shopId)
+//     ->whereIn('source', ['Sell', 'Quick Sell'])
+//     ->when($start && $end, function ($q) use ($start, $end) {
+//         $q->whereBetween('created_at', [$start, $end]);
+//     })
+//     ->sum('total');
+
+// $conditionSell = InvoiceBilling::where('shop_id', $shopId)
+//     ->where('source', 'Condition Sales')
+//     ->when($start && $end, function ($q) use ($start, $end) {
+//         $q->whereBetween('created_at', [$start, $end]);
+//     })
+//     ->sum('paid');
+
+// $sell = $normalSell + $conditionSell;
 
     /* PURCHASE */
 
