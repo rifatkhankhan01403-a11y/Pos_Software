@@ -279,12 +279,12 @@
 
 
     <!-- REPORT -->
-    <div class="nav-section-title">Analytics</div>
+    {{-- <div class="nav-section-title">Analytics</div>
 
     <a href="{{url('/reportPage')}}" class="side-bar-item">
         <i class="bi bi-bar-chart-line"></i>
         <span class="side-bar-item-caption">Reports</span>
-    </a>
+    </a> --}}
 
 </div>
 

@@ -73,43 +73,67 @@ public function downloadPdf(Request $request)
     $shopId = $request->auth_shop_id;
 
     // SHOP INFO
-    $shop = User::where('shop_id', $shopId)
-        ->where('role', 'owner')
-        ->first();
+    $shop = User::where('shop_id', $shopId)->first();
 
+    // PURCHASE QUERY
     $query = StockAdd::where('shop_id', $shopId)
         ->where('source', 'Purchase');
 
     // SEARCH
     if ($request->filled('search')) {
+
         $search = $request->search;
 
         $query->where(function ($q) use ($search) {
-            $q->where('supplier_name', 'like', "%$search%")
-              ->orWhere('supplier_phone', 'like', "%$search%");
+
+            $q->where('supplier_name', 'like', "%{$search}%")
+              ->orWhere('supplier_phone', 'like', "%{$search}%");
+
         });
     }
 
     // DATE FILTER
-    if ($request->filled('start_date') && $request->filled('end_date')) {
+    if (
+        $request->filled('start_date') &&
+        $request->filled('end_date')
+    ) {
+
         $query->whereBetween('created_at', [
-            $request->start_date . " 00:00:00",
-            $request->end_date . " 23:59:59"
+
+            $request->start_date . ' 00:00:00',
+            $request->end_date . ' 23:59:59'
+
         ]);
     }
 
-    $purchases = $query->oldest()->get();
+    // GET DATA
+    $purchases = $query
+        ->orderBy('created_at', 'desc')
+        ->get();
+
+    // FORMAT DATE
+    $purchases->transform(function ($item) {
+
+        $item->formatted_created_at = Carbon::parse(
+            $item->created_at
+        )->format('d M Y, h:i A');
+
+        return $item;
+    });
 
     // SUMMARY
     $totalPurchase = $purchases->sum('total_cost');
 
+    // PDF
     $pdf = Pdf::loadView('pdf.purchase', [
-        'purchases' => $purchases,
-        'shop' => $shop,
-        'totalPurchase' => $totalPurchase,
-        'startDate' => $request->start_date,
-        'endDate' => $request->end_date,
-        'search' => $request->search
+
+        'purchases'      => $purchases,
+        'shop'           => $shop,
+        'totalPurchase'  => $totalPurchase,
+        'startDate'      => $request->start_date,
+        'endDate'        => $request->end_date,
+        'search'         => $request->search
+
     ])->setPaper('a4');
 
     return $pdf->download('purchase-report.pdf');
