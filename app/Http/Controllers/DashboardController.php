@@ -192,6 +192,10 @@ $payable = ($supplier->total_cost ?? 0) - ($supplier->paid_amount ?? 0);
         $expense = Expense::where('shop_id', $shopId)->sum('amount');
 
 
+   $customer_due = InvoiceBilling::where('shop_id', $shopId)
+   ->whereIn('source', ['customer_due'])->sum('due');
+  $supplier_due = StockAdd::where('shop_id', $shopId)
+   ->whereIn('source', ['supplier_due'])->sum('due_amount');
         // net balance calculation in dashboard
 
      $cashIn = InvoiceBilling::where('shop_id', $shopId)->sum('paid');
@@ -199,9 +203,9 @@ $payable = ($supplier->total_cost ?? 0) - ($supplier->paid_amount ?? 0);
 $cashOut = StockAdd::where('shop_id', $shopId)->sum('paid_amount')
            + Expense::where('shop_id', $shopId)->sum('amount');
 
-$cash = $cashIn - $cashOut;
+$cash = $cashIn - $cashOut - $customer_due +   $supplier_due  ;
 
-$net = $cash + $receivable - $payable;
+$net = $cash ;
 
 
         return response()->json([

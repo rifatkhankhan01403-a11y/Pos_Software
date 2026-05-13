@@ -136,7 +136,7 @@
 
 <tr>
     <td>2</td>
-    <td>{{ ucfirst($filter) }} Condition Sale</td>
+    <td>{{ ucfirst($filter) }} Condition Pending Sale</td>
     <td>Tk  {{ number_format($conditionSell) }}</td>
 </tr>
 
