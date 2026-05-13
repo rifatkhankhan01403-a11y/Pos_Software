@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Models\InvoiceBilling;
 use App\Models\Product;
 use App\Models\Customer;
+use Carbon\Carbon;
+
 use Illuminate\View\View;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\User;
@@ -244,18 +246,29 @@ public function downloadPdf(Request $request)
     $shopId = $request->auth_shop_id;
 
     $startDate = $request->start_date;
-    $endDate = $request->end_date;
+    $endDate   = $request->end_date;
 
+    // SHOP INFO
+    $shop = User::where('shop_id', $shopId)->first();
+
+    // QUERY
     $query = InvoiceBilling::where('shop_id', $shopId)
         ->where('source', 'Condition Sales');
 
-    if ($request->search) {
-        $query->where(function ($q) use ($request) {
-            $q->where('customer_name', 'like', '%' . $request->search . '%')
-              ->orWhere('customer_mobile', 'like', '%' . $request->search . '%');
+    // SEARCH
+    if ($request->filled('search')) {
+
+        $search = $request->search;
+
+        $query->where(function ($q) use ($search) {
+
+            $q->where('customer_name', 'like', "%{$search}%")
+              ->orWhere('customer_mobile', 'like', "%{$search}%");
+
         });
     }
 
+    // STATUS FILTER
     if ($request->status == 'pending') {
         $query->where('due', '>', 0);
     }
@@ -264,49 +277,66 @@ public function downloadPdf(Request $request)
         $query->where('due', 0);
     }
 
+    // DATE FILTER
     if ($startDate && $endDate) {
+
         $query->whereBetween('created_at', [
+
             $startDate . ' 00:00:00',
             $endDate . ' 23:59:59'
+
         ]);
     }
 
-    $sales = $query->orderBy('id', 'desc')->get();
+    // GET SALES (OLDEST FIRST)
+    $sales = $query
+        ->oldest()
+        ->get();
 
+    // FORMAT DATA
     $sales->transform(function ($row, $index) {
+
         $items = is_array($row->items)
             ? $row->items
             : json_decode($row->items, true);
 
         $qty = 0;
+
         foreach ($items ?? [] as $item) {
+
             $qty += $item['qty'] ?? 0;
         }
 
         $row->sl = $index + 1;
+
         $row->qty = $qty;
+
+        $row->formatted_created_at = Carbon::parse(
+            $row->created_at
+        )->format('d M Y, h:i A');
 
         return $row;
     });
-    $total = $sales->sum('total');
-$totalPaid = $sales->sum('paid');
-$totalDue = $sales->sum('due');
 
-   $shop = User::where('shop_id', $shopId)
-    ->where('role', 'owner')
-    ->first();
+    // SUMMARY
+    $total      = $sales->sum('total');
+    $totalPaid  = $sales->sum('paid');
+    $totalDue   = $sales->sum('due');
 
-   $pdf = PDF::loadView('pdf.cod-sale', [
-    'sales' => $sales,
-    'shop' => $shop,
-    'startDate' => $startDate,
-    'endDate' => $endDate,
+    // PDF
+    $pdf = PDF::loadView('pdf.cod-sale', [
 
-    // ✅ ADD THESE
-    'total' => $total,
-    'totalPaid' => $totalPaid,
-    'totalDue' => $totalDue
-]);
+        'sales'       => $sales,
+        'shop'        => $shop,
+        'startDate'   => $startDate,
+        'endDate'     => $endDate,
+        'total'       => $total,
+        'totalPaid'   => $totalPaid,
+        'totalDue'    => $totalDue,
+        'search'      => $request->search,
+        'status'      => $request->status
+
+    ])->setPaper('a4');
 
     return $pdf->download('cod-sales.pdf');
 }
