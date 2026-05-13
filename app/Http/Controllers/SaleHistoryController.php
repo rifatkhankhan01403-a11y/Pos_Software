@@ -116,8 +116,8 @@ public function downloadPdf(Request $request)
 
     // GET SALES
     $sales = $query
-        ->orderBy('created_at', 'desc')
-        ->get();
+        ->oldest()
+    ->get();
 
     // SUMMARY
     $totalSales = 0;

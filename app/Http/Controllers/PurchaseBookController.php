@@ -108,7 +108,7 @@ public function downloadPdf(Request $request)
 
     // GET DATA
     $purchases = $query
-        ->orderBy('created_at', 'desc')
+         ->oldest()
         ->get();
 
     // FORMAT DATE

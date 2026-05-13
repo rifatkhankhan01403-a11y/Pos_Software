@@ -139,10 +139,9 @@ public function downloadExpensePdf(Request $request)
         ]);
     }
 
-    $expenses = $query
-        ->orderBy('created_at', 'desc')
-        ->get();
-
+ $expenses = $query
+    ->oldest()
+    ->get();
     // FORMAT DATE
     $expenses->transform(function ($item) {
 
