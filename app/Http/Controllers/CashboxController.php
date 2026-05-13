@@ -286,7 +286,7 @@ $expenseData = $expenseQuery
             ->merge($cashInData)
             ->merge($stockOutData)
             ->merge($expenseData)
-            ->sortByDesc('date')
+            ->sortBy('date')
             ->values();
 
         if ($type) {

@@ -98,7 +98,7 @@ if ($start && $end) {
     $conditionQuery->whereBetween('created_at', [$start, $end]);
 }
 
-$conditionSell = $conditionQuery->sum('total');
+$conditionSell = $conditionQuery->sum('due');
 
 
 /* STOCK SOLD QTY */
@@ -325,7 +325,7 @@ $net = $cash + $receivable - $payable;
         $conditionQuery->whereBetween('created_at', [$start, $end]);
     }
 
-    $conditionSell = $conditionQuery->sum('total');
+    $conditionSell = $conditionQuery->sum('due');
 
 
     /* STOCK */

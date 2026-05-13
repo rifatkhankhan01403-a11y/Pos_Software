@@ -180,7 +180,7 @@ margin-bottom:10px;
     <div class="col-lg-3">
         <div class="dashboard-card" onclick="goTo('/salePage')">
             <div>
-                <div class="card-title" id="conditionTitle">Today Condition Sale</div>
+                <div class="card-title" id="conditionTitle">Today Condition Pending Sale</div>
                 <div class="card-value text-warning" id="conditionAmount">৳ 0</div>
             </div>
             <div class="icon-box">🚚</div>
@@ -391,7 +391,7 @@ document.getElementById("expenseTitle").innerText =
         title + " Expense";
 
 document.getElementById("conditionTitle").innerText =
-        title + " Condition Sale";
+        title + " Condition Pending Sale";
 
 document.getElementById("stockSellTitle").innerText =
         title + " Stock Sold";

@@ -84,7 +84,7 @@ class CodSaleController extends Controller
 
                 'items' => $items,
 
-                'total' => $total,
+                'total' => $final,
                 'discount' => $discount,
                 'paid' => 0,
                 'due' => $final,

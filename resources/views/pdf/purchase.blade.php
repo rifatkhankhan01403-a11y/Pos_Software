@@ -83,13 +83,14 @@
     <thead>
         <tr>
             <th>SL</th>
+            <th>Date</th>
             <th>Supplier</th>
             <th>Phone</th>
             <th>Items</th>
             <th>Amount</th>
             <th>Paid</th>
             <th>Due</th>
-            <th>Date</th>
+
         </tr>
     </thead>
 
@@ -112,13 +113,14 @@
 
         <tr>
             <td>{{ $index + 1 }}</td>
+              <td>{{ \Carbon\Carbon::parse($p->created_at)->format('d M Y') }}</td>
             <td>{{ $p->supplier_name ?? '-' }}</td>
             <td>{{ $p->supplier_phone ?? '-' }}</td>
             <td>{{ $totalQty }}</td>
             <td>Tk {{ number_format($p->total_cost) }}</td>
             <td>Tk{{ number_format($p->paid_amount) }}</td>
             <td>Tk{{ number_format($p->due_amount) }}</td>
-            <td>{{ \Carbon\Carbon::parse($p->created_at)->format('d M Y') }}</td>
+
         </tr>
 
         @endforeach

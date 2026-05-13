@@ -136,7 +136,7 @@ public function downloadExpensePdf(Request $request)
         $query->whereBetween('date', [$startDate, $endDate]);
     }
 
-    $expenses = $query->orderBy('created_at', 'desc')->get();
+    $expenses = $query->orderBy('created_at')->get();
 
     // ✅ FORMAT created_at HERE
     $expenses->transform(function ($item) {

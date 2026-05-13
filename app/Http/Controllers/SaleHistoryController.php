@@ -97,7 +97,7 @@ public function downloadPdf(Request $request)
         ]);
     }
 
-    $sales = $query->latest()->get();
+  $sales = $query->oldest()->get();
 
     $shop = \App\Models\User::where('shop_id', $shopId)->first();
 

@@ -98,7 +98,7 @@ public function downloadPdf(Request $request)
         ]);
     }
 
-    $purchases = $query->latest()->get();
+    $purchases = $query->oldest()->get();
 
     // SUMMARY
     $totalPurchase = $purchases->sum('total_cost');

@@ -77,29 +77,17 @@
 
 <!-- HEADER -->
 
+<!-- HEADER -->
 <div class="header">
-
     <h2>{{ $shop->shop_name ?? 'Shop Name' }}</h2>
-
-    <p>
-        Owner:
-        {{ $shop->firstName ?? '-' }}
-    </p>
-
-    <p>
-        Mobile:
-        {{ $shop->mobile ?? '-' }}
-    </p>
-
+    <div>Owner: {{ $shop->firstName ?? '-' }}</div>
+    <div>Mobile: {{ $shop->mobile ?? '-' }}</div>
+    <h4>Dashboard Report</h4>
 </div>
+
 
 
 <!-- TITLE -->
-
-<div class="report-title">
-    Dashboard Report
-</div>
-
 
 <!-- FILTER INFO -->
 
