@@ -233,9 +233,7 @@ $expenseData = $expenseQuery
 
         $shopId = $request->auth_shop_id;
 
-        $shop = User::where('shop_id', $shopId)
-            ->where('role', 'owner')
-            ->first();
+        $shop = User::where('shop_id', $shopId)->first();
 
         $invoiceQuery = InvoiceBilling::where('shop_id', $shopId);
         $stockQuery = StockAdd::where('shop_id', $shopId);
