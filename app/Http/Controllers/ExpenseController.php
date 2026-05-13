@@ -118,41 +118,53 @@ class ExpenseController extends Controller
 
 
 
-
 public function downloadExpensePdf(Request $request)
 {
     $shopId = $request->auth_shop_id;
 
     $startDate = $request->start_date;
-    $endDate = $request->end_date;
+    $endDate   = $request->end_date;
 
-    $shop = User::where('shop_id', $shopId)
-        ->where('role', 'owner')
-        ->first();
+    // SHOP INFO
+    $shop = User::where('shop_id', $shopId)->first();
 
+    // EXPENSE QUERY
     $query = Expense::where('shop_id', $shopId);
 
     if ($startDate && $endDate) {
-        $query->whereBetween('date', [$startDate, $endDate]);
+
+        $query->whereBetween('date', [
+            $startDate,
+            $endDate
+        ]);
     }
 
-    $expenses = $query->orderBy('created_at')->get();
+    $expenses = $query
+        ->orderBy('created_at', 'desc')
+        ->get();
 
-    // ✅ FORMAT created_at HERE
+    // FORMAT DATE
     $expenses->transform(function ($item) {
-        $item->formatted_created_at = \Carbon\Carbon::parse($item->created_at)
-            ->format('d M Y, h:i A');
+
+        $item->formatted_created_at = Carbon::parse(
+            $item->created_at
+        )->format('d M Y, h:i A');
+
         return $item;
     });
 
+    // TOTAL
     $total = $expenses->sum('amount');
 
+    // PDF
     $pdf = Pdf::loadView('pdf.expense', [
-        'expenses' => $expenses,
-        'shop' => $shop,
-        'total' => $total,
-        'startDate' => $startDate,
-        'endDate' => $endDate
+
+        'expenses'   => $expenses,
+        'shop'       => $shop,
+        'total'      => $total,
+        'startDate'  => $startDate,
+        'endDate'    => $endDate
+
     ])->setPaper('a4');
 
     return $pdf->download('expense-report.pdf');
