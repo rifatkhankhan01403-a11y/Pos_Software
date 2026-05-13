@@ -227,9 +227,8 @@ $net = $cash ;
 
     $shopId = $request->auth_shop_id;
 
-    $shop = User::where('shop_id', $shopId)
-        ->where('role', 'owner')
-        ->first();
+    // SHOP INFO
+    $shop = User::where('shop_id', $shopId)->first();
 
     /* DATE RANGE */
 
@@ -337,80 +336,90 @@ $net = $cash ;
     $stock = Product::where('shop_id', $shopId)
         ->sum('quantity');
 
-    /* STOCK SOLD QTY */
 
-$stockSellQuery = InvoiceBilling::where('shop_id', $shopId)
-    ->whereIn('source', ['Sell', 'Condition Sales', 'Quick Sell']);
+    /* STOCK SOLD */
 
-if ($start && $end) {
-    $stockSellQuery->whereBetween('created_at', [$start, $end]);
-}
+    $stockSellQuery = InvoiceBilling::where('shop_id', $shopId)
+        ->whereIn('source', ['Sell', 'Condition Sales', 'Quick Sell']);
 
-$stockInvoices = $stockSellQuery->get();
+    if ($start && $end) {
+        $stockSellQuery->whereBetween('created_at', [$start, $end]);
+    }
 
-$stockSoldQty = 0;
+    $stockInvoices = $stockSellQuery->get();
 
-foreach ($stockInvoices as $invoice) {
+    $stockSoldQty = 0;
 
-    if (!empty($invoice->items)) {
+    foreach ($stockInvoices as $invoice) {
 
-        foreach ($invoice->items as $item) {
+        if (!empty($invoice->items)) {
 
-            $stockSoldQty += (float) ($item['qty'] ?? 0);
+            foreach ($invoice->items as $item) {
 
+                $stockSoldQty += (float) ($item['qty'] ?? 0);
+            }
         }
     }
-}
 
 
-/* RECEIVABLE */
+    /* RECEIVABLE */
 
-$customer = InvoiceBilling::where('shop_id', $shopId)
-    ->whereIn('source', ['Sell', 'customer_due'])
-    ->selectRaw('SUM(total) as total, SUM(paid) as paid')
-    ->first();
+    $customer = InvoiceBilling::where('shop_id', $shopId)
+        ->whereIn('source', ['Sell', 'customer_due'])
+        ->selectRaw('SUM(total) as total, SUM(paid) as paid')
+        ->first();
 
-$receivable = ($customer->total ?? 0) - ($customer->paid ?? 0);
-
-
-/* PAYABLE */
-
-$supplier = StockAdd::where('shop_id', $shopId)
-    ->whereIn('source', ['Purchase', 'supplier_due'])
-    ->selectRaw('SUM(total_cost) as total_cost, SUM(paid_amount) as paid_amount')
-    ->first();
-
-$payable = ($supplier->total_cost ?? 0) - ($supplier->paid_amount ?? 0);
+    $receivable = ($customer->total ?? 0) - ($customer->paid ?? 0);
 
 
-/* NET BALANCE */
+    /* PAYABLE */
 
-$cashIn = InvoiceBilling::where('shop_id', $shopId)
-    ->sum('paid');
+    $supplier = StockAdd::where('shop_id', $shopId)
+        ->whereIn('source', ['Purchase', 'supplier_due'])
+        ->selectRaw('SUM(total_cost) as total_cost, SUM(paid_amount) as paid_amount')
+        ->first();
 
-$cashOut = StockAdd::where('shop_id', $shopId)
-    ->sum('paid_amount')
-    + Expense::where('shop_id', $shopId)->sum('amount');
+    $payable = ($supplier->total_cost ?? 0) - ($supplier->paid_amount ?? 0);
 
-$cash = $cashIn - $cashOut;
 
-$net = $cash + $receivable - $payable;
+    /* NET BALANCE */
 
+    $customer_due = InvoiceBilling::where('shop_id', $shopId)
+        ->whereIn('source', ['customer_due'])
+        ->sum('due');
+
+    $supplier_due = StockAdd::where('shop_id', $shopId)
+        ->whereIn('source', ['supplier_due'])
+        ->sum('due_amount');
+
+    $cashIn = InvoiceBilling::where('shop_id', $shopId)
+        ->sum('paid');
+
+    $cashOut = StockAdd::where('shop_id', $shopId)
+        ->sum('paid_amount')
+        + Expense::where('shop_id', $shopId)->sum('amount');
+
+    $cash = $cashIn - $cashOut - $customer_due + $supplier_due;
+
+    $net = $cash;
+
+
+    // PDF
 
     $pdf = Pdf::loadView('pdf.dashboard-report', [
 
         'shop' => $shop,
         'filter' => $filter,
 
-      'sell' => $sell,
-'purchase' => $purchase,
-'expense' => $expense,
-'conditionSell' => $conditionSell,
-'stock' => $stock,
-'stockSoldQty' => $stockSoldQty,
-'receivable' => $receivable,
-'payable' => $payable,
-'net' => $net,
+        'sell' => $sell,
+        'purchase' => $purchase,
+        'expense' => $expense,
+        'conditionSell' => $conditionSell,
+        'stock' => $stock,
+        'stockSoldQty' => $stockSoldQty,
+        'receivable' => $receivable,
+        'payable' => $payable,
+        'net' => $net,
 
         'start' => $start,
         'end' => $end
