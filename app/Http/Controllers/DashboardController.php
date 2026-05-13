@@ -101,7 +101,7 @@ $conditionSell = $conditionQuery->sum('total');
 
 /* STOCK SOLD QTY */
 $stockSellQuery = InvoiceBilling::where('shop_id', $shopId)
-    ->whereIn('source', ['Sell', 'Condition Sales']);
+    ->whereIn('source', ['Sell', 'Condition Sales','Quick Sell']);
 
 if ($start && $end) {
     $stockSellQuery->whereBetween('created_at', [$start, $end]);

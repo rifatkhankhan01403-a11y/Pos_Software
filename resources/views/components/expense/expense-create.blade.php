@@ -29,6 +29,7 @@
 <option value="Rent">Rent</option>
 <option value="Purchase">Purchase</option>
 <option value="Bill">Bill</option>
+<option value="Others">Others</option>
 </select>
 
 <label class="form-label mt-3">Amount *</label>
